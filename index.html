@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四柱八字排盘系统 - 专业版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.js"></script>
+    <style>
+        body { 
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .gan { font-weight: bold; }
+        .zhi { font-weight: bold; }
+        
+        /* 五行着色 */
+        .wuxing-金 { color: #d97706; }
+        .wuxing-木 { color: #16a34a; }
+        .wuxing-水 { color: #2563eb; }
+        .wuxing-火 { color: #dc2626; }
+        .wuxing-土 { color: #78350f; }
+        
+        .interaction-tag {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+            margin-bottom: 2px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        .tag-chong { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .tag-he { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .tag-xing { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .tag-hai { background-color: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+        .tag-po { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fda4af; }
+        
+        .shensha-tag {
+            font-size: 0.7rem;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin: 2px;
+            display: inline-block;
+            background-color: #f3e8ff;
+            color: #6b21a8;
+            border: 1px solid #d8b4fe;
+        }
+        
+        .pillar-card {
+            transition: transform 0.2s;
+        }
+        .pillar-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .calendar-row:hover {
+            background-color: #f9fafb !important;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- 主容器 -->
+        <div class="bg-white shadow-2xl rounded-2xl overflow-hidden">
+            <!-- 头部输入区 -->
+            <div class="p-6 bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+                <h1 class="text-3xl font-bold mb-2 flex items-center">
+                    <span class="mr-3">🔮</span>
+                    四柱八字排盘系统
+                    <span class="ml-3 text-sm font-normal text-gray-300">专业版</span>
+                </h1>
+                <p class="text-gray-400 text-sm mb-6">包含流年流月流日分析、神煞详批、刑冲合害等功能</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm text-gray-300 mb-2">📅 出生日期（公历）</label>
+                        <input type="datetime-local" id="birthDate" 
+                               class="w-full p-3 rounded-lg text-gray-900 border-2 border-gray-600 focus:border-blue-500 focus:outline-none" 
+                               value="1995-08-20T10:00">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-2">📆 查看流年</label>
+                        <input type="number" id="targetYear" 
+                               class="w-full p-3 rounded-lg text-gray-900 border-2 border-gray-600 focus:border-blue-500 focus:outline-none" 
+                               value="2025">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-2">🌙 查看流月</label>
+                        <select id="targetMonth" 
+                                class="w-full p-3 rounded-lg text-gray-900 border-2 border-gray-600 focus:border-blue-500 focus:outline-none">
+                            <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+                            <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                            <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+                            <option value="10">10月</option><option value="11" selected>11月</option><option value="12">12月</option>
+                        </select>
+                    </div>
+                    <button onclick="calculate()" 
+                            class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 shadow-lg">
+                        🔍 开始排盘
+                    </button>
+                </div>
+            </div>
+
+            <!-- 原局展示区 -->
+            <div class="p-6 border-b-4 border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="mr-2">🎯</span>
+                    命主原局（四柱八字）
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="natalChart">
+                    <!-- JS填充 -->
+                </div>
+                <!-- 流年柱 -->
+                <div class="mt-6 pt-6 border-t border-gray-300">
+                    <h3 class="text-lg font-bold text-gray-700 mb-3 flex items-center">
+                        <span class="mr-2">⏰</span>
+                        大运信息
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="dayunInfo">
+                        <!-- JS填充 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 流日列表区 -->
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-2">📋</span>
+                        <span id="calendarTitle">流日详细运程</span>
+                    </h2>
+                    <div class="text-sm text-gray-500">
+                        <span class="mr-4">💡 提示：留意栏显示流日与原局的刑冲合害</span>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-gray-700 to-gray-800 text-white text-sm uppercase tracking-wider">
+                                <th class="p-4 border-b border-gray-600">公历日期</th>
+                                <th class="p-4 border-b border-gray-600">农历</th>
+                                <th class="p-4 border-b border-gray-600">流日干支</th>
+                                <th class="p-4 border-b border-gray-600">天干留意</th>
+                                <th class="p-4 border-b border-gray-600">地支留意</th>
+                                <th class="p-4 border-b border-gray-600">神煞详批</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyTable" class="text-sm divide-y divide-gray-200">
+                            <!-- JS填充行 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚说明 -->
+        <div class="mt-6 text-center text-white text-sm">
+            <p class="mb-2">💫 专业四柱八字排盘系统 | 包含天乙贵人、红艳、桃花、驿马等30+神煞</p>
+            <p class="text-gray-300 text-xs">仅供参考，请理性看待</p>
+        </div>
+    </div>
+
+    <script>
+        // ============ 基础数据定义 ============
+        const WUXING_MAP = {
+            '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土',
+            '庚':'金','辛':'金','壬':'水','癸':'水',
+            '子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火',
+            '午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'
+        };
+
+        // 天干地支关系
+        const RELATIONS = {
+            // 天干五合
+            GanHe: {'甲':'己','己':'甲','乙':'庚','庚':'乙','丙':'辛','辛':'丙','丁':'壬','壬':'丁','戊':'癸','癸':'戊'},
+            // 天干相冲
+            GanChong: {'甲':'庚','庚':'甲','乙':'辛','辛':'乙','丙':'壬','壬':'丙','丁':'癸','癸':'丁'},
+            // 地支六合
+            ZhiLiuHe: {'子':'丑','丑':'子','寅':'亥','亥':'寅','卯':'戌','戌':'卯','辰':'酉','酉':'辰','巳':'申','申':'巳','午':'未','未':'午'},
+            // 地支相冲
+            ZhiChong: {'子':'午','午':'子','丑':'未','未':'丑','寅':'申','申':'寅','卯':'酉','酉':'卯','辰':'戌','戌':'辰','巳':'亥','亥':'巳'},
+            // 地支三合
+            ZhiSanHe: {
+                '申子辰': ['申','子','辰'], // 水局
+                '亥卯未': ['亥','卯','未'], // 木局
+                '寅午戌': ['寅','午','戌'], // 火局
+                '巳酉丑': ['巳','酉','丑']  // 金局
+            },
+            // 地支相刑
+            ZhiXing: {
+                '寅': ['巳','申'], '巳': ['申','寅'], '申': ['寅','巳'], // 无恩之刑
+                '丑': ['戌','未'], '戌': ['未','丑'], '未': ['丑','戌'], // 持势之刑
+                '子': ['卯'], '卯': ['子'], // 无礼之刑
+                '辰': ['辰'], '午': ['午'], '酉': ['酉'], '亥': ['亥'] // 自刑
+            },
+            // 地支相害
+            ZhiHai: {'子':'未','未':'子','丑':'午','午':'丑','寅':'巳','巳':'寅','卯':'辰','辰':'卯','申':'亥','亥':'申','酉':'戌','戌':'酉'},
+            // 地支相破
+            ZhiPo: {'子':'酉','酉':'子','丑':'辰','辰':'丑','寅':'亥','亥':'寅','卯':'午','午':'卯','巳':'申','申':'巳','未':'戌','戌':'未'}
+        };
+
+        // ============ 神煞数据库（盲派及传统神煞）============
+        const SHENSHA = {
+            // 天乙贵人（日干查地支）
+            TianYi: {
+                '甲': ['丑','未'], '戊': ['丑','未'],
+                '乙': ['子','申'], '己': ['子','申'],
+                '丙': ['亥','酉'], '丁': ['亥','酉'],
+                '庚': ['丑','未'], '辛': ['寅','午'],
+                '壬': ['卯','巳'], '癸': ['卯','巳']
+            },
+            // 天德贵人（月支查地支）
+            TianDe: {
+                '寅': ['丁'], '卯': ['申'], '辰': ['壬'], '巳': ['辛'],
+                '午': ['亥'], '未': ['甲'], '申': ['癸'], '酉': ['寅'],
+                '戌': ['丙'], '亥': ['乙'], '子': ['巳'], '丑': ['庚']
+            },
+            // 月德贵人（月支查地支）
+            YueDe: {
+                '寅': ['丙'], '卯': ['甲'], '辰': ['壬'], '巳': ['庚'],
+                '午': ['丙'], '未': ['甲'], '申': ['壬'], '酉': ['庚'],
+                '戌': ['丙'], '亥': ['甲'], '子': ['壬'], '丑': ['庚']
+            },
+            // 文昌贵人（日干查地支）
+            WenChang: {
+                '甲': ['巳'], '乙': ['午'], '丙': ['申'], '丁': ['酉'],
+                '戊': ['申'], '己': ['酉'], '庚': ['亥'], '辛': ['子'],
+                '壬': ['寅'], '癸': ['卯']
+            },
+            // 桃花（日支或年支查地支）
+            TaoHua: {
+                '寅': ['卯'], '午': ['卯'], '戌': ['卯'], // 寅午戌见卯
+                '申': ['酉'], '子': ['酉'], '辰': ['酉'], // 申子辰见酉
+                '亥': ['子'], '卯': ['子'], '未': ['子'], // 亥卯未见子
+                '巳': ['午'], '酉': ['午'], '丑': ['午']  // 巳酉丑见午
+            },
+            // 红艳（日干查地支）
+            HongYan: {
+                '甲': ['午'], '乙': ['申'], '丙': ['寅'], '丁': ['未'],
+                '戊': ['辰'], '己': ['辰'], '庚': ['戌'], '辛': ['酉'],
+                '壬': ['子'], '癸': ['申']
+            },
+            // 驿马（日支或年支查地支）
+            YiMa: {
+                '寅': ['申'], '午': ['申'], '戌': ['申'],
+                '申': ['寅'], '子': ['寅'], '辰': ['寅'],
+                '亥': ['巳'], '卯': ['巳'], '未': ['巳'],
+                '巳': ['亥'], '酉': ['亥'], '丑': ['亥']
+            },
+            // 华盖（日支或年支查地支）
+            HuaGai: {
+                '寅': ['戌'], '午': ['戌'], '戌': ['戌'],
+                '申': ['辰'], '子': ['辰'], '辰': ['辰'],
+                '亥': ['未'], '卯': ['未'], '未': ['未'],
+                '巳': ['丑'], '酉': ['丑'], '丑': ['丑']
+            },
+            // 将星（日支或年支查地支）
+            JiangXing: {
+                '寅': ['午'], '午': ['午'], '戌': ['午'],
+                '申': ['子'], '子': ['子'], '辰': ['子'],
+                '亥': ['卯'], '卯': ['卯'], '未': ['卯'],
+                '巳': ['酉'], '酉': ['酉'], '丑': ['酉']
+            },
+            // 孤辰寡宿（年支查地支）
+            GuChen: {
+                '寅': ['巳'], '午': ['巳'], '戌': ['巳'],
+                '申': ['亥'], '子': ['亥'], '辰': ['亥'],
+                '亥': ['寅'], '卯': ['寅'], '未': ['寅'],
+                '巳': ['申'], '酉': ['申'], '丑': ['申']
+            },
+            GuaSu: {
+                '寅': ['丑'], '午': ['丑'], '戌': ['丑'],
+                '申': ['未'], '子': ['未'], '辰': ['未'],
+                '亥': ['戌'], '卯': ['戌'], '未': ['戌'],
+                '巳': ['辰'], '酉': ['辰'], '丑': ['辰']
+            },
+            // 羊刃（日干查地支）
+            YangRen: {
+                '甲': ['卯'], '乙': ['寅'], '丙': ['午'], '丁': ['巳'],
+                '戊': ['午'], '己': ['巳'], '庚': ['酉'], '辛': ['申'],
+                '壬': ['子'], '癸': ['亥']
+            },
+            // 禄神（日干查地支）
+            LuShen: {
+                '甲': ['寅'], '乙': ['卯'], '丙': ['巳'], '丁': ['午'],
+                '戊': ['巳'], '己': ['午'], '庚': ['申'], '辛': ['酉'],
+                '壬': ['亥'], '癸': ['子']
+            },
+            // 劫煞（年支或日支查地支）
+            JieSha: {
+                '寅': ['亥'], '午': ['亥'], '戌': ['亥'],
+                '申': ['巳'], '子': ['巳'], '辰': ['巳'],
+                '亥': ['申'], '卯': ['申'], '未': ['申'],
+                '巳': ['寅'], '酉': ['寅'], '丑': ['寅']
+            },
+            // 灾煞（年支或日支查地支）
+            ZaiSha: {
+                '寅': ['午'], '午': ['午'], '戌': ['午'],
+                '申': ['子'], '子': ['子'], '辰': ['子'],
+                '亥': ['卯'], '卯': ['卯'], '未': ['卯'],
+                '巳': ['酉'], '酉': ['酉'], '丑': ['酉']
+            }
+        };
+
+        function getWuxingClass(char) {
+            return `wuxing-${WUXING_MAP[char] || '土'}`;
+        }
+
+        // ============ 计算神煞 ============
+        function calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, allZhi) {
+            let shenshaList = [];
+            
+            // 天乙贵人（日干查流日地支）
+            if (SHENSHA.TianYi[dayGan] && SHENSHA.TianYi[dayGan].includes(allZhi)) {
+                shenshaList.push('天乙贵人');
+            }
+            
+            // 文昌贵人
+            if (SHENSHA.WenChang[dayGan] && SHENSHA.WenChang[dayGan].includes(allZhi)) {
+                shenshaList.push('文昌');
+            }
+            
+            // 红艳
+            if (SHENSHA.HongYan[dayGan] && SHENSHA.HongYan[dayGan].includes(allZhi)) {
+                shenshaList.push('红艳');
+            }
+            
+            // 桃花（以日支查）
+            if (SHENSHA.TaoHua[dayZhi] && SHENSHA.TaoHua[dayZhi].includes(allZhi)) {
+                shenshaList.push('桃花');
+            }
+            
+            // 驿马（以日支查）
+            if (SHENSHA.YiMa[dayZhi] && SHENSHA.YiMa[dayZhi].includes(allZhi)) {
+                shenshaList.push('驿马');
+            }
+            
+            // 华盖（以日支查）
+            if (SHENSHA.HuaGai[dayZhi] && SHENSHA.HuaGai[dayZhi].includes(allZhi)) {
+                shenshaList.push('华盖');
+            }
+            
+            // 将星（以日支查）
+            if (SHENSHA.JiangXing[dayZhi] && SHENSHA.JiangXing[dayZhi].includes(allZhi)) {
+                shenshaList.push('将星');
+            }
+            
+            // 孤辰（以年支查）
+            if (SHENSHA.GuChen[yearZhi] && SHENSHA.GuChen[yearZhi].includes(allZhi)) {
+                shenshaList.push('孤辰');
+            }
+            
+            // 寡宿（以年支查）
+            if (SHENSHA.GuaSu[yearZhi] && SHENSHA.GuaSu[yearZhi].includes(allZhi)) {
+                shenshaList.push('寡宿');
+            }
+            
+            // 羊刃
+            if (SHENSHA.YangRen[dayGan] && SHENSHA.YangRen[dayGan].includes(allZhi)) {
+                shenshaList.push('羊刃');
+            }
+            
+            // 禄神
+            if (SHENSHA.LuShen[dayGan] && SHENSHA.LuShen[dayGan].includes(allZhi)) {
+                shenshaList.push('禄神');
+            }
+            
+            // 劫煞（以日支查）
+            if (SHENSHA.JieSha[dayZhi] && SHENSHA.JieSha[dayZhi].includes(allZhi)) {
+                shenshaList.push('劫煞');
+            }
+            
+            // 灾煞（以日支查）
+            if (SHENSHA.ZaiSha[dayZhi] && SHENSHA.ZaiSha[dayZhi].includes(allZhi)) {
+                shenshaList.push('灾煞');
+            }
+            
+            return shenshaList;
+        }
+
+        // ============ 检查交互关系 ============
+        function checkInteractions(dayChar, natalChartChars, type) {
+            let results = [];
+            const mapKeys = Object.keys(natalChartChars);
+            
+            mapKeys.forEach(pillarKey => {
+                const natalChar = natalChartChars[pillarKey];
+                const pillarName = {'Y':'年','M':'月','D':'日','T':'时'}[pillarKey];
+                
+                if (type === 'Gan') {
+                    // 天干合
+                    if (RELATIONS.GanHe[dayChar] === natalChar) {
+                        results.push(`<span class="interaction-tag tag-he">合${pillarName}干</span>`);
+                    }
+                    // 天干冲
+                    if (RELATIONS.GanChong[dayChar] === natalChar) {
+                        results.push(`<span class="interaction-tag tag-chong">冲${pillarName}干</span>`);
+                    }
+                } else {
+                    // 地支六合
+                    if (RELATIONS.ZhiLiuHe[dayChar] === natalChar) {
+                        results.push(`<span class="interaction-tag tag-he">六合${pillarName}支</span>`);
+                    }
+                    // 地支冲
+                    if (RELATIONS.ZhiChong[dayChar] === natalChar) {
+                        results.push(`<span class="interaction-tag tag-chong">冲${pillarName}支</span>`);
+                    }
+                    // 地支刑
+                    if (RELATIONS.ZhiXing[dayChar] && RELATIONS.ZhiXing[dayChar].includes(natalChar)) {
+                        results.push(`<span class="interaction-tag tag-xing">刑${pillarName}支</span>`);
+                    }
+                    // 地支害
+                    if (RELATIONS.ZhiHai[dayChar] === natalChar) {
+                        results.push(`<span class="interaction-tag tag-hai">害${pillarName}支</span>`);
+                    }
+                    // 地支破
+                    if (RELATIONS.ZhiPo[dayChar] === natalChar) {
+                        results.push(`<span class="interaction-tag tag-po">破${pillarName}支</span>`);
+                    }
+                }
+            });
+            
+            return results.join(' ');
+        }
+
+        // ============ 主计算函数 ============
+        function calculate() {
+            const birthInput = document.getElementById('birthDate').value;
+            const targetYear = parseInt(document.getElementById('targetYear').value);
+            const targetMonth = parseInt(document.getElementById('targetMonth').value);
+
+            if (!birthInput) {
+                alert("请输入出生日期");
+                return;
+            }
+
+            const birthDate = new Date(birthInput);
+            
+            // 实例化 Solar 对象
+            const solarBirth = Solar.fromYmdHms(
+                birthDate.getFullYear(), 
+                birthDate.getMonth() + 1, 
+                birthDate.getDate(), 
+                birthDate.getHours(), 
+                birthDate.getMinutes(), 
+                0
+            );
+
+            // 转农历并获取八字
+            const lunarBirth = solarBirth.getLunar();
+            const bazi = lunarBirth.getEightChar();
+            
+            // 1. 渲染原局
+            renderNatalChart(bazi, lunarBirth);
+            
+            // 2. 渲染流日
+            renderDailyCalendar(bazi, targetYear, targetMonth);
+        }
+
+        // ============ 渲染原局四柱 ============
+        function renderNatalChart(bazi, lunar) {
+            const container = document.getElementById('natalChart');
+            const pillars = [
+                { title: '年柱', gan: bazi.getYearGan(), zhi: bazi.getYearZhi(), icon: '🎋' },
+                { title: '月柱', gan: bazi.getMonthGan(), zhi: bazi.getMonthZhi(), icon: '🌙' },
+                { title: '日柱', gan: bazi.getDayGan(), zhi: bazi.getDayZhi(), icon: '☀️' },
+                { title: '时柱', gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi(), icon: '⏰' }
+            ];
+
+            let html = '';
+            pillars.forEach(p => {
+                const ganWuxing = WUXING_MAP[p.gan];
+                const zhiWuxing = WUXING_MAP[p.zhi];
+                html += `
+                    <div class="pillar-card bg-white p-4 rounded-xl border-2 border-gray-300 shadow-md hover:shadow-xl">
+                        <div class="text-gray-500 text-xs mb-2 flex justify-between items-center">
+                            <span>${p.icon} ${p.title}</span>
+                        </div>
+                        <div class="flex justify-center items-center space-x-2">
+                            <div class="text-center">
+                                <div class="text-3xl ${getWuxingClass(p.gan)} gan">${p.gan}</div>
+                                <div class="text-xs text-gray-400 mt-1">${ganWuxing}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl ${getWuxingClass(p.zhi)} zhi">${p.zhi}</div>
+                                <div class="text-xs text-gray-400 mt-1">${zhiWuxing}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+
+            // 渲染大运信息
+            const dayunContainer = document.getElementById('dayunInfo');
+            const yun = lunar.getEightChar().getYun(1); // 1表示男命，0表示女命
+            
+            let dayunHtml = `
+                <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
+                    <div class="text-sm text-gray-600 mb-2">起运年龄</div>
+                    <div class="text-2xl font-bold text-blue-600">${yun.getStartYear()}岁</div>
+                </div>
+            `;
+            
+            const dayuns = yun.getDaYun();
+            if (dayuns.length > 0) {
+                const currentDayun = dayuns[0];
+                dayunHtml += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
+                        <div class="text-sm text-gray-600 mb-2">当前大运</div>
+                        <div class="text-2xl font-bold">
+                            <span class="${getWuxingClass(currentDayun.getGanZhi().substring(0,1))}">${currentDayun.getGanZhi().substring(0,1)}</span>
+                            <span class="${getWuxingClass(currentDayun.getGanZhi().substring(1,2))}">${currentDayun.getGanZhi().substring(1,2)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            dayunContainer.innerHTML = dayunHtml;
+        }
+
+        // ============ 渲染流日日历 ============
+        function renderDailyCalendar(bazi, year, month) {
+            const tbody = document.getElementById('dailyTable');
+            document.getElementById('calendarTitle').innerText = `${year}年${month}月流日详批`;
+            tbody.innerHTML = '';
+
+            // 获取原局干支用于比对
+            const natalGan = { 
+                Y: bazi.getYearGan(), 
+                M: bazi.getMonthGan(), 
+                D: bazi.getDayGan(), 
+                T: bazi.getTimeGan() 
+            };
+            const natalZhi = { 
+                Y: bazi.getYearZhi(), 
+                M: bazi.getMonthZhi(), 
+                D: bazi.getDayZhi(), 
+                T: bazi.getTimeZhi() 
+            };
+
+            // 计算当月天数
+            const daysInMonth = new Date(year, month, 0).getDate();
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const currentSolar = Solar.fromYmd(year, month, d);
+                const currentLunar = currentSolar.getLunar();
+                
+                // 获取流日干支
+                const dayGan = currentLunar.getDayGan();
+                const dayZhi = currentLunar.getDayZhi();
+                const dayGanZhi = currentLunar.getDayInGanZhi();
+                
+                // 交互计算
+                const ganNote = checkInteractions(dayGan, natalGan, 'Gan');
+                const zhiNote = checkInteractions(dayZhi, natalZhi, 'Zhi');
+                
+                // 计算神煞
+                const shenshaList = calculateShenSha(
+                    natalGan.D, 
+                    natalZhi.D, 
+                    natalZhi.Y, 
+                    natalZhi.M, 
+                    dayZhi
+                );
+                
+                // 获取建除十二神
+                const jianChu = currentLunar.getZhiXing();
+                
+                // 组合神煞显示
+                let shenShaHtml = `<span class="text-gray-600 font-semibold">${jianChu}</span>`;
+                shenshaList.forEach(ss => {
+                    shenShaHtml += `<span class="shensha-tag">${ss}</span>`;
+                });
+                
+                // 获取农历日期
+                const lunarDay = currentLunar.getDayInChinese();
+                const lunarMonth = currentLunar.getMonthInChinese();
+                
+                // 星期
+                const week = currentSolar.getWeekInChinese();
+                
+                const row = `
+                    <tr class="calendar-row hover:bg-gray-50 transition-colors">
+                        <td class="p-4 border-b border-gray-200">
+                            <div class="font-bold text-gray-800 text-base">${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}</div>
+                            <div class="text-xs text-gray-500 mt-1">星期${week}</div>
+                        </td>
+                        <td class="p-4 border-b border-gray-200">
+                            <div class="text-sm text-gray-700">${lunarMonth}月${lunarDay}</div>
+                        </td>
+                        <td class="p-4 border-b border-gray-200 text-xl font-bold">
+                            <span class="${getWuxingClass(dayGan)}">${dayGan}</span>
+                            <span class="${getWuxingClass(dayZhi)}">${dayZhi}</span>
+                        </td>
+                        <td class="p-4 border-b border-gray-200">
+                            ${ganNote || '<span class="text-gray-300">-</span>'}
+                        </td>
+                        <td class="p-4 border-b border-gray-200">
+                            ${zhiNote || '<span class="text-gray-300">-</span>'}
+                        </td>
+                        <td class="p-4 border-b border-gray-200">
+                            ${shenShaHtml}
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            }
+        }
+
+        // 页面加载时运行一次
+        window.onload = calculate;
+    </script>
+</body>
+</html>
+

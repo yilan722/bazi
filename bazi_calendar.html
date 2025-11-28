@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="zh-CN"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;八字流日排盘日历&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- 引入 Tailwind CSS 进行美化 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- 引入专业的农历/八字计算库 lunar-javascript --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: "Microsoft YaHei", sans-serif; background-color: #f3f4f6; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.gan { font-weight: bold; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.zhi { font-weight: bold; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* 五行着色 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.wuxing-金 { color: #d97706; } /* 橙色代表金 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.wuxing-木 { color: #16a34a; } /* 绿色代表木 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.wuxing-水 { color: #2563eb; } /* 蓝色代表水 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.wuxing-火 { color: #dc2626; } /* 红色代表火 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.wuxing-土 { color: #78350f; } /* 褐色代表土 */</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.interaction-tag {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.75rem;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 2px 4px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 4px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-right: 2px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: inline-block;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.tag-chong { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.tag-he { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body class="p-4 md:p-8"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="max-w-6xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 头部输入区 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="p-6 bg-gray-800 text-white"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h1 class="text-2xl font-bold mb-4"&gt;八字流日排盘系统&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label class="block text-sm text-gray-400 mb-1"&gt;出生日期 (公历)&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;input type="datetime-local" id="birthDate" class="w-full p-2 rounded text-gray-900" value="1995-08-20T10:00"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label class="block text-sm text-gray-400 mb-1"&gt;查看流年&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;input type="number" id="targetYear" class="w-full p-2 rounded text-gray-900" value="2025"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label class="block text-sm text-gray-400 mb-1"&gt;查看流月&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;select id="targetMonth" class="w-full p-2 rounded text-gray-900"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="1"&gt;1月&lt;/option&gt;&lt;option value="2"&gt;2月&lt;/option&gt;&lt;option value="3"&gt;3月&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="4"&gt;4月&lt;/option&gt;&lt;option value="5"&gt;5月&lt;/option&gt;&lt;option value="6"&gt;6月&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="7"&gt;7月&lt;/option&gt;&lt;option value="8"&gt;8月&lt;/option&gt;&lt;option value="9"&gt;9月&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="10"&gt;10月&lt;/option&gt;&lt;option value="11" selected&gt;11月&lt;/option&gt;&lt;option value="12"&gt;12月&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;button onclick="calculate()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>排盘生成</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 原局展示区 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="p-6 border-b border-gray-200 bg-gray-50"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 class="text-lg font-bold text-gray-700 mb-3"&gt;命主原局 (四柱)&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="grid grid-cols-4 gap-4 text-center" id="natalChart"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;!-- JS填充 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 流日列表区 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="p-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 class="text-lg font-bold text-gray-700 mb-3 flex justify-between items-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span id="calendarTitle"&gt;流日详细运程&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span class="text-sm font-normal text-gray-500"&gt;注：留意栏显示流日与原局的刑冲合害&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="overflow-x-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;table class="w-full text-left border-collapse"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th class="p-3 border-b"&gt;公历日期&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th class="p-3 border-b"&gt;流日干支&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th class="p-3 border-b"&gt;天干留意 (交互)&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th class="p-3 border-b"&gt;地支留意 (交互)&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th class="p-3 border-b"&gt;流日神煞&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;tbody id="dailyTable" class="text-sm divide-y divide-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;!-- JS填充行 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/tbody&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/table&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 基础数据定义</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const WUXING_MAP = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水','子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 简单的刑冲合害逻辑库 (用于演示"留意"功能)</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const RELATIONS = {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>GanHe: {'甲':'己', '己':'甲', '乙':'庚', '庚':'乙', '丙':'辛', '辛':'丙', '丁':'壬', '壬':'丁', '戊':'癸', '癸':'戊'},</p>
+<p class="p1"><span class="Apple-converted-space">            </span>GanChong: {'甲':'庚', '庚':'甲', '乙':'辛', '辛':'乙', '丙':'壬', '壬':'丙', '丁':'癸', '癸':'丁'}, // 简单冲</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ZhiLiuHe: {'子':'丑', '丑':'子', '寅':'亥', '亥':'寅', '卯':'戌', '戌':'卯', '辰':'酉', '酉':'辰', '巳':'申', '申':'巳', '午':'未', '未':'午'},</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ZhiChong: {'子':'午', '午':'子', '丑':'未', '未':'丑', '寅':'申', '申':'寅', '卯':'酉', '酉':'卯', '辰':'戌', '戌':'辰', '巳':'亥', '亥':'巳'}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function getWuxingClass(char) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return `wuxing-${WUXING_MAP[char] || '土'}`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function calculate() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const birthInput = document.getElementById('birthDate').value;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const targetYear = parseInt(document.getElementById('targetYear').value);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const targetMonth = parseInt(document.getElementById('targetMonth').value);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!birthInput) return alert("请输入出生日期");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const birthDate = new Date(birthInput);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 实例化 Solar 对象 (lunar-javascript 库)</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const solarBirth = Solar.fromYmdHms(</p>
+<p class="p1"><span class="Apple-converted-space">                </span>birthDate.getFullYear(),<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>birthDate.getMonth() + 1,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>birthDate.getDate(),<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>birthDate.getHours(),<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>birthDate.getMinutes(),<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>0</p>
+<p class="p1"><span class="Apple-converted-space">            </span>);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 转农历并获取八字</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const lunarBirth = solarBirth.getLunar();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const bazi = lunarBirth.getEightChar();</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 1. 渲染原局</p>
+<p class="p1"><span class="Apple-converted-space">            </span>renderNatalChart(bazi);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 2. 渲染流日</p>
+<p class="p1"><span class="Apple-converted-space">            </span>renderDailyCalendar(bazi, targetYear, targetMonth);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function renderNatalChart(bazi) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const container = document.getElementById('natalChart');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const pillars = [</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{ title: '年柱', gan: bazi.getYearGan(), zhi: bazi.getYearZhi() },</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{ title: '月柱', gan: bazi.getMonthGan(), zhi: bazi.getMonthZhi() },</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{ title: '日柱', gan: bazi.getDayGan(), zhi: bazi.getDayZhi() },</p>
+<p class="p1"><span class="Apple-converted-space">                </span>{ title: '时柱', gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi() }</p>
+<p class="p1"><span class="Apple-converted-space">            </span>];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>let html = '';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>pillars.forEach(p =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>html += `</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-white p-3 rounded border border-gray-200 shadow-sm"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="text-gray-500 text-xs mb-1"&gt;${p.title}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="text-2xl ${getWuxingClass(p.gan)} gan"&gt;${p.gan}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="text-2xl ${getWuxingClass(p.zhi)} zhi mt-1"&gt;${p.zhi}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">            </span>container.innerHTML = html;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function checkInteractions(dayChar, natalChartChars, type) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>let results = [];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// natalChartChars 是一个对象 {Y: '甲', M: '乙', D: '丙', T: '丁'}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// type 是 'Gan' 或 'Zhi'</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const mapKeys = Object.keys(natalChartChars);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>mapKeys.forEach(pillarKey =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const natalChar = natalChartChars[pillarKey];</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const pillarName = {'Y':'年','M':'月','D':'日','T':'时'}[pillarKey];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (type === 'Gan') {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (RELATIONS.GanHe[dayChar] === natalChar) results.push(`&lt;span class="interaction-tag tag-he"&gt;合${pillarName}&lt;/span&gt;`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (RELATIONS.GanChong[dayChar] === natalChar) results.push(`&lt;span class="interaction-tag tag-chong"&gt;冲${pillarName}&lt;/span&gt;`);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (RELATIONS.ZhiLiuHe[dayChar] === natalChar) results.push(`&lt;span class="interaction-tag tag-he"&gt;六合${pillarName}&lt;/span&gt;`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (RELATIONS.ZhiChong[dayChar] === natalChar) results.push(`&lt;span class="interaction-tag tag-chong"&gt;冲${pillarName}&lt;/span&gt;`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// 这里可以扩展三合、相刑、相害等逻辑</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return results.join(' ');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function renderDailyCalendar(bazi, year, month) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const tbody = document.getElementById('dailyTable');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('calendarTitle').innerText = `${year}年${month}月 流日运程`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>tbody.innerHTML = '';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 获取原局干支用于比对</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const natalGan = { Y: bazi.getYearGan(), M: bazi.getMonthGan(), D: bazi.getDayGan(), T: bazi.getTimeGan() };</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const natalZhi = { Y: bazi.getYearZhi(), M: bazi.getMonthZhi(), D: bazi.getDayZhi(), T: bazi.getTimeZhi() };</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 计算当月天数</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const daysInMonth = new Date(year, month, 0).getDate();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let d = 1; d &lt;= daysInMonth; d++) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const currentSolar = Solar.fromYmd(year, month, d);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const currentLunar = currentSolar.getLunar();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// 获取流日干支</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const dayGan = currentLunar.getDayGan();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const dayZhi = currentLunar.getDayZhi();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const dayGanZhi = currentLunar.getDayInGanZhi();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// 交互计算 (天干留意 / 地支留意)</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const ganNote = checkInteractions(dayGan, natalGan, 'Gan');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const zhiNote = checkInteractions(dayZhi, natalZhi, 'Zhi');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// 获取神煞 (库函数自带部分，这里仅作演示)</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// 注意：lunar-javascript 的 getDayShenSha 并不直接针对个人八字，</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// 而是通书神煞。若需盲派神煞需写复杂逻辑。这里展示通书神煞及十二建除。</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const jianChu = currentLunar.getZhiXing(); // 建除十二神</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// 简单演示神煞字符串</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const shenSha = `${jianChu}`;<span class="Apple-converted-space"> </span></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>const row = `</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;tr class="hover:bg-gray-50 transition-colors"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td class="p-3 border-b"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="font-bold text-gray-800"&gt;${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div class="text-xs text-gray-400"&gt;星期${currentSolar.getWeekInChinese()}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td class="p-3 border-b text-lg"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="${getWuxingClass(dayGan)}"&gt;${dayGan}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;span class="${getWuxingClass(dayZhi)}"&gt;${dayZhi}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td class="p-3 border-b"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>${ganNote || '&lt;span class="text-gray-300"&gt;-&lt;/span&gt;'}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td class="p-3 border-b"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>${zhiNote || '&lt;span class="text-gray-300"&gt;-&lt;/span&gt;'}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;td class="p-3 border-b text-sm text-gray-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>${shenSha}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>tbody.innerHTML += row;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 页面加载时运行一次</p>
+<p class="p1"><span class="Apple-converted-space">        </span>window.onload = calculate;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
