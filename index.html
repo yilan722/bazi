@@ -73,12 +73,26 @@
                 </h1>
                 <p class="text-gray-400 text-sm mb-6">包含流年流月流日分析、神煞详批、刑冲合害等功能</p>
                 
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-2">👤 姓名</label>
+                        <input type="text" id="userName" 
+                               class="w-full p-3 rounded-lg text-gray-900 border-2 border-gray-600 focus:border-blue-500 focus:outline-none" 
+                               placeholder="请输入姓名">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-2">⚥ 性别</label>
+                        <select id="userGender" 
+                                class="w-full p-3 rounded-lg text-gray-900 border-2 border-gray-600 focus:border-blue-500 focus:outline-none">
+                            <option value="1">男</option>
+                            <option value="0">女</option>
+                        </select>
+                    </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm text-gray-300 mb-2">📅 出生日期（公历）</label>
                         <input type="datetime-local" id="birthDate" 
                                class="w-full p-3 rounded-lg text-gray-900 border-2 border-gray-600 focus:border-blue-500 focus:outline-none" 
-                               value="1995-08-20T10:00">
+                               value="1995-07-02T19:55">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-300 mb-2">📆 查看流年</label>
@@ -96,11 +110,18 @@
                             <option value="10">10月</option><option value="11" selected>11月</option><option value="12">12月</option>
                         </select>
                     </div>
+                </div>
+                <div class="mt-4">
                     <button onclick="calculate()" 
-                            class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 shadow-lg">
+                            class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 shadow-lg">
                         🔍 开始排盘
                     </button>
                 </div>
+            </div>
+
+            <!-- 八字排盘结果 -->
+            <div id="baziResult" class="p-6 border-b-4 border-gray-200 bg-white" style="display:none;">
+                <!-- JS动态填充 -->
             </div>
 
             <!-- 原局展示区 -->
@@ -431,6 +452,8 @@
             const birthInput = document.getElementById('birthDate').value;
             const targetYear = parseInt(document.getElementById('targetYear').value);
             const targetMonth = parseInt(document.getElementById('targetMonth').value);
+            const userName = document.getElementById('userName').value || '未填写';
+            const userGender = parseInt(document.getElementById('userGender').value);
 
             if (!birthInput) {
                 alert("请输入出生日期");
@@ -453,15 +476,243 @@
             const lunarBirth = solarBirth.getLunar();
             const bazi = lunarBirth.getEightChar();
             
+            // 0. 渲染八字排盘结果
+            renderBaziResult(bazi, lunarBirth, solarBirth, userName, userGender);
+            
             // 1. 渲染原局
-            renderNatalChart(bazi, lunarBirth);
+            renderNatalChart(bazi, lunarBirth, userGender);
             
             // 2. 渲染流日
             renderDailyCalendar(bazi, targetYear, targetMonth);
         }
 
+        // ============ 十神映射 ============
+        const SHISHEN_MAP = {
+            '甲': {'甲': '比肩', '乙': '劫财', '丙': '食神', '丁': '伤官', '戊': '偏财', '己': '正财', '庚': '偏官', '辛': '正官', '壬': '偏印', '癸': '正印'},
+            '乙': {'甲': '劫财', '乙': '比肩', '丙': '伤官', '丁': '食神', '戊': '正财', '己': '偏财', '庚': '正官', '辛': '偏官', '壬': '正印', '癸': '偏印'},
+            '丙': {'甲': '偏印', '乙': '正印', '丙': '比肩', '丁': '劫财', '戊': '食神', '己': '伤官', '庚': '偏财', '辛': '正财', '壬': '偏官', '癸': '正官'},
+            '丁': {'甲': '正印', '乙': '偏印', '丙': '劫财', '丁': '比肩', '戊': '伤官', '己': '食神', '庚': '正财', '辛': '偏财', '壬': '正官', '癸': '偏官'},
+            '戊': {'甲': '偏官', '乙': '正官', '丙': '偏印', '丁': '正印', '戊': '比肩', '己': '劫财', '庚': '食神', '辛': '伤官', '壬': '偏财', '癸': '正财'},
+            '己': {'甲': '正官', '乙': '偏官', '丙': '正印', '丁': '偏印', '戊': '劫财', '己': '比肩', '庚': '伤官', '辛': '食神', '壬': '正财', '癸': '偏财'},
+            '庚': {'甲': '偏财', '乙': '正财', '丙': '偏官', '丁': '正官', '戊': '偏印', '己': '正印', '庚': '比肩', '辛': '劫财', '壬': '食神', '癸': '伤官'},
+            '辛': {'甲': '正财', '乙': '偏财', '丙': '正官', '丁': '偏官', '戊': '正印', '己': '偏印', '庚': '劫财', '辛': '比肩', '壬': '伤官', '癸': '食神'},
+            '壬': {'甲': '食神', '乙': '伤官', '丙': '偏财', '丁': '正财', '戊': '偏官', '己': '正官', '庚': '偏印', '辛': '正印', '壬': '比肩', '癸': '劫财'},
+            '癸': {'甲': '伤官', '乙': '食神', '丙': '正财', '丁': '偏财', '戊': '正官', '己': '偏官', '庚': '正印', '辛': '偏印', '壬': '劫财', '癸': '比肩'}
+        };
+
+        // 获取地支藏干
+        const CANGAN_MAP = {
+            '子': ['癸'],
+            '丑': ['己', '癸', '辛'],
+            '寅': ['甲', '丙', '戊'],
+            '卯': ['乙'],
+            '辰': ['戊', '乙', '癸'],
+            '巳': ['丙', '庚', '戊'],
+            '午': ['丁', '己'],
+            '未': ['己', '丁', '乙'],
+            '申': ['庚', '壬', '戊'],
+            '酉': ['辛'],
+            '戌': ['戊', '辛', '丁'],
+            '亥': ['壬', '甲']
+        };
+
+        // 纳音
+        const NAYIN_MAP = {
+            '甲子': '海中金', '乙丑': '海中金', '丙寅': '炉中火', '丁卯': '炉中火',
+            '戊辰': '大林木', '己巳': '大林木', '庚午': '路旁土', '辛未': '路旁土',
+            '壬申': '剑锋金', '癸酉': '剑锋金', '甲戌': '山头火', '乙亥': '山头火',
+            '丙子': '涧下水', '丁丑': '涧下水', '戊寅': '城头土', '己卯': '城头土',
+            '庚辰': '白蜡金', '辛巳': '白蜡金', '壬午': '杨柳木', '癸未': '杨柳木',
+            '甲申': '泉中水', '乙酉': '泉中水', '丙戌': '屋上土', '丁亥': '屋上土',
+            '戊子': '霹雳火', '己丑': '霹雳火', '庚寅': '松柏木', '辛卯': '松柏木',
+            '壬辰': '长流水', '癸巳': '长流水', '甲午': '砂石金', '乙未': '砂石金',
+            '丙申': '山下火', '丁酉': '山下火', '戊戌': '平地木', '己亥': '平地木',
+            '庚子': '壁上土', '辛丑': '壁上土', '壬寅': '金箔金', '癸卯': '金箔金',
+            '甲辰': '覆灯火', '乙巳': '覆灯火', '丙午': '天河水', '丁未': '天河水',
+            '戊申': '大驿土', '己酉': '大驿土', '庚戌': '钗钏金', '辛亥': '钗钏金',
+            '壬子': '桑柘木', '癸丑': '桑柘木', '甲寅': '大溪水', '乙卯': '大溪水',
+            '丙辰': '沙中土', '丁巳': '沙中土', '戊午': '天上火', '己未': '天上火',
+            '庚申': '石榴木', '辛酉': '石榴木', '壬戌': '大海水', '癸亥': '大海水'
+        };
+
+        function getShiShen(dayGan, targetGan) {
+            return SHISHEN_MAP[dayGan] ? SHISHEN_MAP[dayGan][targetGan] : '';
+        }
+
+        function getCangGan(zhi) {
+            return CANGAN_MAP[zhi] || [];
+        }
+
+        function getNaYin(ganZhi) {
+            return NAYIN_MAP[ganZhi] || '';
+        }
+
+        // ============ 渲染八字排盘结果 ============
+        function renderBaziResult(bazi, lunar, solar, userName, userGender) {
+            const container = document.getElementById('baziResult');
+            
+            // 获取八字信息
+            const yearGan = bazi.getYearGan();
+            const yearZhi = bazi.getYearZhi();
+            const monthGan = bazi.getMonthGan();
+            const monthZhi = bazi.getMonthZhi();
+            const dayGan = bazi.getDayGan();
+            const dayZhi = bazi.getDayZhi();
+            const timeGan = bazi.getTimeGan();
+            const timeZhi = bazi.getTimeZhi();
+
+            // 获取五行统计
+            const wuxingCount = {'金': 0, '木': 0, '水': 0, '火': 0, '土': 0};
+            [yearGan, yearZhi, monthGan, monthZhi, dayGan, dayZhi, timeGan, timeZhi].forEach(char => {
+                const wx = WUXING_MAP[char];
+                if (wx) wuxingCount[wx]++;
+            });
+            const wuxingStr = Object.keys(wuxingCount).map(k => `${k}(${wuxingCount[k]})`).join('，');
+
+            // 计算起运信息
+            const yun = bazi.getYun(userGender);
+            const startAge = yun.getStartYear();
+            const startSolar = yun.getStartSolar();
+            
+            // 获取命宫、胎元
+            const mingGong = bazi.getMingGong();
+            const taiYuan = bazi.getTaiYuan();
+
+            // 获取空亡（从日柱获取）
+            const xun = lunar.getDayXun();
+            const kongWang = lunar.getDayXunKong();
+            
+            // 获取公历农历信息
+            const solarDate = `${solar.getYear()}年${String(solar.getMonth()).padStart(2, '0')}月${String(solar.getDay()).padStart(2, '0')}日${String(solar.getHour()).padStart(2, '0')}时${String(solar.getMinute()).padStart(2, '0')}分`;
+            const lunarDate = `${lunar.getYearInChinese()}年(生肖${lunar.getYearShengXiao()})${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}${lunar.getTimeZhi()}时`;
+
+            // 计算神煞（获取日柱和年支的所有神煞）
+            const allShenSha = [];
+            const dayZhiList = [yearZhi, monthZhi, dayZhi, timeZhi];
+            dayZhiList.forEach(zhi => {
+                const ss = calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, zhi);
+                allShenSha.push(...ss);
+            });
+            // 去重
+            const uniqueShenSha = [...new Set(allShenSha)];
+
+            const html = `
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">八字排盘结果</h2>
+                    
+                    <!-- 基本信息 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+                        <div class="space-y-2">
+                            <p><span class="font-bold">姓名：</span>${userName} &nbsp;&nbsp; <span class="font-bold">五行：</span>${wuxingStr}</p>
+                            <p><span class="font-bold">性别：</span>${userGender === 1 ? '男' : '女'} &nbsp;&nbsp; <span class="font-bold">胎元：</span>${taiYuan} &nbsp;&nbsp; <span class="font-bold">命宫：</span>${mingGong}</p>
+                            <p><span class="font-bold">节气：</span>${lunar.getPrevJieQi().getName()} ${lunar.getPrevJieQi().getSolar().toYmd()} &nbsp;&nbsp; ${lunar.getNextJieQi().getName()} ${lunar.getNextJieQi().getSolar().toYmd()}</p>
+                        </div>
+                        <div class="space-y-2">
+                            <p><span class="font-bold">起运：</span>命主于出生后${startAge}年开始起运</p>
+                            <p><span class="font-bold">交运：</span>命主于公历${startSolar.getYear()}年${String(startSolar.getMonth()).padStart(2, '0')}月${String(startSolar.getDay()).padStart(2, '0')}日交运</p>
+                            <p><span class="font-bold">排盘方式：</span>公历排盘</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+                        <p><span class="font-bold">公历：</span>${solarDate}</p>
+                        <p><span class="font-bold">农历：</span>${lunarDate}</p>
+                    </div>
+
+                    <!-- 四柱表格 -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse text-center text-sm">
+                            <thead>
+                                <tr class="bg-gray-400 text-black">
+                                    <th class="border border-gray-400 p-2">四柱</th>
+                                    <th class="border border-gray-400 p-2">年柱</th>
+                                    <th class="border border-gray-400 p-2">月柱</th>
+                                    <th class="border border-gray-400 p-2">日柱</th>
+                                    <th class="border border-gray-400 p-2">时柱</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white">
+                                <tr>
+                                    <td class="border border-gray-300 p-2 bg-gray-100 font-bold">十神</td>
+                                    <td class="border border-gray-300 p-2">${getShiShen(dayGan, yearGan)}</td>
+                                    <td class="border border-gray-300 p-2">${getShiShen(dayGan, monthGan)}</td>
+                                    <td class="border border-gray-300 p-2 bg-blue-100"><span class="text-blue-600">元女</span></td>
+                                    <td class="border border-gray-300 p-2">${getShiShen(dayGan, timeGan)}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2 bg-gray-200 font-bold">天干</td>
+                                    <td class="border border-gray-300 p-2">
+                                        <span class="text-2xl font-bold ${getWuxingClass(yearGan)}">${yearGan}</span>
+                                    </td>
+                                    <td class="border border-gray-300 p-2">
+                                        <span class="text-2xl font-bold ${getWuxingClass(monthGan)}">${monthGan}</span>
+                                    </td>
+                                    <td class="border border-gray-300 p-2 bg-blue-50">
+                                        <span class="text-2xl font-bold ${getWuxingClass(dayGan)}">${dayGan}</span>
+                                    </td>
+                                    <td class="border border-gray-300 p-2">
+                                        <span class="text-2xl font-bold ${getWuxingClass(timeGan)}">${timeGan}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2 bg-gray-200 font-bold">地支</td>
+                                    <td class="border border-gray-300 p-2">
+                                        <span class="text-2xl font-bold ${getWuxingClass(yearZhi)}">${yearZhi}</span>
+                                    </td>
+                                    <td class="border border-gray-300 p-2">
+                                        <span class="text-2xl font-bold ${getWuxingClass(monthZhi)}">${monthZhi}</span>
+                                    </td>
+                                    <td class="border border-gray-300 p-2 bg-blue-50">
+                                        <span class="text-2xl font-bold ${getWuxingClass(dayZhi)}">${dayZhi}</span>
+                                    </td>
+                                    <td class="border border-gray-300 p-2">
+                                        <span class="text-2xl font-bold ${getWuxingClass(timeZhi)}">${timeZhi}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2 bg-gray-100 font-bold">藏干</td>
+                                    <td class="border border-gray-300 p-2 text-xs">
+                                        ${getCangGan(yearZhi).map(g => `<span class="${getWuxingClass(g)}">${g}(${getShiShen(dayGan, g)})</span>`).join('<br>')}
+                                    </td>
+                                    <td class="border border-gray-300 p-2 text-xs">
+                                        ${getCangGan(monthZhi).map(g => `<span class="${getWuxingClass(g)}">${g}(${getShiShen(dayGan, g)})</span>`).join('<br>')}
+                                    </td>
+                                    <td class="border border-gray-300 p-2 text-xs bg-blue-50">
+                                        ${getCangGan(dayZhi).map(g => `<span class="${getWuxingClass(g)}">${g}(${getShiShen(dayGan, g)})</span>`).join('<br>')}
+                                    </td>
+                                    <td class="border border-gray-300 p-2 text-xs">
+                                        ${getCangGan(timeZhi).map(g => `<span class="${getWuxingClass(g)}">${g}(${getShiShen(dayGan, g)})</span>`).join('<br>')}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2 bg-gray-100 font-bold">纳音</td>
+                                    <td class="border border-gray-300 p-2 text-xs">${getNaYin(yearGan + yearZhi)}</td>
+                                    <td class="border border-gray-300 p-2 text-xs">${getNaYin(monthGan + monthZhi)}</td>
+                                    <td class="border border-gray-300 p-2 text-xs bg-blue-50">${getNaYin(dayGan + dayZhi)}</td>
+                                    <td class="border border-gray-300 p-2 text-xs">${getNaYin(timeGan + timeZhi)}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2 bg-gray-100 font-bold">空亡</td>
+                                    <td class="border border-gray-300 p-2 text-sm" colspan="4">${kongWang}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 p-2 bg-gray-100 font-bold">神煞</td>
+                                    <td class="border border-gray-300 p-2 text-xs" colspan="4">
+                                        ${uniqueShenSha.map(s => `<span class="shensha-tag">${s}</span>`).join(' ')}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
         // ============ 渲染原局四柱 ============
-        function renderNatalChart(bazi, lunar) {
+        function renderNatalChart(bazi, lunar, userGender) {
             const container = document.getElementById('natalChart');
             const pillars = [
                 { title: '年柱', gan: bazi.getYearGan(), zhi: bazi.getYearZhi(), icon: '🎋' },
@@ -494,9 +745,9 @@
             });
             container.innerHTML = html;
 
-            // 渲染大运信息
+            // 渲染大运信息（使用性别参数）
             const dayunContainer = document.getElementById('dayunInfo');
-            const yun = lunar.getEightChar().getYun(1); // 1表示男命，0表示女命
+            const yun = lunar.getEightChar().getYun(userGender);
             
             let dayunHtml = `
                 <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
