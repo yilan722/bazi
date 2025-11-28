@@ -133,14 +133,16 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4" id="natalChart">
                     <!-- JS填充 -->
                 </div>
-                <!-- 流年柱 -->
+                <!-- 大运详细信息 -->
                 <div class="mt-6 pt-6 border-t border-gray-300">
                     <h3 class="text-lg font-bold text-gray-700 mb-3 flex items-center">
                         <span class="mr-2">⏰</span>
-                        大运信息
+                        大运详批
                     </h3>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="dayunInfo">
-                        <!-- JS填充 -->
+                    <div class="overflow-x-auto">
+                        <div id="dayunDetailTable">
+                            <!-- JS填充大运详细表格 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -323,6 +325,134 @@
                 '申': ['子'], '子': ['子'], '辰': ['子'],
                 '亥': ['卯'], '卯': ['卯'], '未': ['卯'],
                 '巳': ['酉'], '酉': ['酉'], '丑': ['酉']
+            },
+            // 亡神（年支或日支查地支）
+            WangShen: {
+                '寅': ['巳'], '午': ['巳'], '戌': ['巳'],
+                '申': ['亥'], '子': ['亥'], '辰': ['亥'],
+                '亥': ['寅'], '卯': ['寅'], '未': ['寅'],
+                '巳': ['申'], '酉': ['申'], '丑': ['申']
+            },
+            // 天医（日干查地支）
+            TianYi2: {
+                '甲': ['丑'], '乙': ['子'], '丙': ['亥'], '丁': ['酉'],
+                '戊': ['丑'], '己': ['子'], '庚': ['丑'], '辛': ['寅'],
+                '壬': ['卯'], '癸': ['巳']
+            },
+            // 金舆（日支查地支）
+            JinYu: {
+                '寅': ['戌'], '午': ['戌'], '戌': ['戌'],
+                '申': ['辰'], '子': ['辰'], '辰': ['辰'],
+                '亥': ['未'], '卯': ['未'], '未': ['未'],
+                '巳': ['丑'], '酉': ['丑'], '丑': ['丑']
+            },
+            // 天罗地网（地支本身）
+            TianLuo: ['戌', '亥'],
+            DiWang: ['辰', '巳'],
+            // 元辰（年支查地支）
+            YuanChen: {
+                '子': ['未'], '丑': ['申'], '寅': ['酉'], '卯': ['戌'],
+                '辰': ['亥'], '巳': ['子'], '午': ['丑'], '未': ['寅'],
+                '申': ['卯'], '酉': ['辰'], '戌': ['巳'], '亥': ['午']
+            },
+            // 咸池（年支或日支查地支）
+            XianChi: {
+                '寅': ['卯'], '午': ['卯'], '戌': ['卯'],
+                '申': ['酉'], '子': ['酉'], '辰': ['酉'],
+                '亥': ['子'], '卯': ['子'], '未': ['子'],
+                '巳': ['午'], '酉': ['午'], '丑': ['午']
+            },
+            // 空亡（旬空，由出生日柱旬决定）
+            // 这个需要特殊处理，不在这里定义
+            // 白虎（年支查地支）
+            BaiHu: {
+                '寅': ['申'], '卯': ['酉'], '辰': ['戌'], '巳': ['亥'],
+                '午': ['子'], '未': ['丑'], '申': ['寅'], '酉': ['卯'],
+                '戌': ['辰'], '亥': ['巳'], '子': ['午'], '丑': ['未']
+            },
+            // 天喜（年支查地支）
+            TianXi: {
+                '寅': ['戌'], '卯': ['酉'], '辰': ['申'], '巳': ['未'],
+                '午': ['午'], '未': ['巳'], '申': ['辰'], '酉': ['卯'],
+                '戌': ['寅'], '亥': ['丑'], '子': ['子'], '丑': ['亥']
+            },
+            // 红鸾（年支查地支）
+            HongLuan: {
+                '寅': ['卯'], '卯': ['寅'], '辰': ['丑'], '巳': ['子'],
+                '午': ['亥'], '未': ['戌'], '申': ['酉'], '酉': ['申'],
+                '戌': ['未'], '亥': ['午'], '子': ['巳'], '丑': ['辰']
+            },
+            // 丧门（年支查地支）
+            SangMen: {
+                '寅': ['巳'], '卯': ['午'], '辰': ['未'], '巳': ['申'],
+                '午': ['酉'], '未': ['戌'], '申': ['亥'], '酉': ['子'],
+                '戌': ['丑'], '亥': ['寅'], '子': ['卯'], '丑': ['辰']
+            },
+            // 吊客（年支查地支）
+            DiaoKe: {
+                '寅': ['丑'], '卯': ['寅'], '辰': ['卯'], '巳': ['辰'],
+                '午': ['巳'], '未': ['午'], '申': ['未'], '酉': ['申'],
+                '戌': ['酉'], '亥': ['戌'], '子': ['亥'], '丑': ['子']
+            },
+            // 天德合（月支查天干）
+            TianDeHe: {
+                '寅': ['壬'], '卯': ['庚'], '辰': ['丙'], '巳': ['乙'],
+                '午': ['甲'], '未': ['癸'], '申': ['丁'], '酉': ['丙'],
+                '戌': ['辛'], '亥': ['庚'], '子': ['戊'], '丑': ['乙']
+            },
+            // 月德合（月支查天干）
+            YueDeHe: {
+                '寅': ['辛'], '卯': ['己'], '辰': ['丙'], '巳': ['乙'],
+                '午': ['辛'], '未': ['己'], '申': ['丙'], '酉': ['乙'],
+                '戌': ['辛'], '亥': ['己'], '子': ['丙'], '丑': ['乙']
+            },
+            // 国印贵人（日干查地支）
+            GuoYin: {
+                '甲': ['戌'], '乙': ['亥'], '丙': ['丑'], '丁': ['丑'],
+                '戊': ['丑'], '己': ['丑'], '庚': ['辰'], '辛': ['辰'],
+                '壬': ['未'], '癸': ['未']
+            },
+            // 学堂（日干查地支）
+            XueTang: {
+                '甲': ['巳'], '乙': ['午'], '丙': ['申'], '丁': ['酉'],
+                '戊': ['申'], '己': ['酉'], '庚': ['亥'], '辛': ['子'],
+                '壬': ['寅'], '癸': ['卯']
+            },
+            // 太极贵人（日干查地支）
+            TaiJi: {
+                '甲': ['子','午'], '乙': ['子','午'],
+                '丙': ['卯','酉','巳','亥'], '丁': ['卯','酉','巳','亥'],
+                '戊': ['辰','戌','丑','未'], '己': ['辰','戌','丑','未'],
+                '庚': ['寅','亥','巳','申'], '辛': ['寅','亥','巳','申'],
+                '壬': ['卯','酉'], '癸': ['卯','酉']
+            },
+            // 天厨贵人（年支查地支）
+            TianChu: {
+                '寅': ['巳'], '卯': ['午'], '辰': ['未'], '巳': ['申'],
+                '午': ['酉'], '未': ['戌'], '申': ['亥'], '酉': ['子'],
+                '戌': ['丑'], '亥': ['寅'], '子': ['卯'], '丑': ['辰']
+            },
+            // 天赦（月支和日支组合判断，这里简化处理）
+            // 春季：戊寅日 夏季：甲午日 秋季：戊申日 冬季：甲子日
+            TianShe: {
+                '寅': ['寅'], // 春月见寅
+                '卯': ['寅'],
+                '辰': ['寅'],
+                '巳': ['午'], // 夏月见午
+                '午': ['午'],
+                '未': ['午'],
+                '申': ['申'], // 秋月见申
+                '酉': ['申'],
+                '戌': ['申'],
+                '亥': ['子'], // 冬月见子
+                '子': ['子'],
+                '丑': ['子']
+            },
+            // 披麻（年支查地支）
+            PiMa: {
+                '寅': ['亥'], '卯': ['子'], '辰': ['丑'], '巳': ['寅'],
+                '午': ['卯'], '未': ['辰'], '申': ['巳'], '酉': ['午'],
+                '戌': ['未'], '亥': ['申'], '子': ['酉'], '丑': ['戌']
             }
         };
 
@@ -330,8 +460,26 @@
             return `wuxing-${WUXING_MAP[char] || '土'}`;
         }
 
+        // ============ 十二长生数据 ============
+        const CHANGSHENG_MAP = {
+            '甲': {'亥':'长生','子':'沐浴','丑':'冠带','寅':'临官','卯':'帝旺','辰':'衰','巳':'病','午':'死','未':'墓','申':'绝','酉':'胎','戌':'养'},
+            '乙': {'午':'长生','巳':'沐浴','辰':'冠带','卯':'临官','寅':'帝旺','丑':'衰','子':'病','亥':'死','戌':'墓','酉':'绝','申':'胎','未':'养'},
+            '丙': {'寅':'长生','卯':'沐浴','辰':'冠带','巳':'临官','午':'帝旺','未':'衰','申':'病','酉':'死','戌':'墓','亥':'绝','子':'胎','丑':'养'},
+            '丁': {'酉':'长生','申':'沐浴','未':'冠带','午':'临官','巳':'帝旺','辰':'衰','卯':'病','寅':'死','丑':'墓','子':'绝','亥':'胎','戌':'养'},
+            '戊': {'寅':'长生','卯':'沐浴','辰':'冠带','巳':'临官','午':'帝旺','未':'衰','申':'病','酉':'死','戌':'墓','亥':'绝','子':'胎','丑':'养'},
+            '己': {'酉':'长生','申':'沐浴','未':'冠带','午':'临官','巳':'帝旺','辰':'衰','卯':'病','寅':'死','丑':'墓','子':'绝','亥':'胎','戌':'养'},
+            '庚': {'巳':'长生','午':'沐浴','未':'冠带','申':'临官','酉':'帝旺','戌':'衰','亥':'病','子':'死','丑':'墓','寅':'绝','卯':'胎','辰':'养'},
+            '辛': {'子':'长生','亥':'沐浴','戌':'冠带','酉':'临官','申':'帝旺','未':'衰','午':'病','巳':'死','辰':'墓','卯':'绝','寅':'胎','丑':'养'},
+            '壬': {'申':'长生','酉':'沐浴','戌':'冠带','亥':'临官','子':'帝旺','丑':'衰','寅':'病','卯':'死','辰':'墓','巳':'绝','午':'胎','未':'养'},
+            '癸': {'卯':'长生','寅':'沐浴','丑':'冠带','子':'临官','亥':'帝旺','戌':'衰','酉':'病','申':'死','未':'墓','午':'绝','巳':'胎','辰':'养'}
+        };
+
+        function getChangSheng(gan, zhi) {
+            return CHANGSHENG_MAP[gan] ? CHANGSHENG_MAP[gan][zhi] || '-' : '-';
+        }
+
         // ============ 计算神煞 ============
-        function calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, allZhi) {
+        function calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, allZhi, allGan) {
             let shenshaList = [];
             
             // 天乙贵人（日干查流日地支）
@@ -341,7 +489,27 @@
             
             // 文昌贵人
             if (SHENSHA.WenChang[dayGan] && SHENSHA.WenChang[dayGan].includes(allZhi)) {
-                shenshaList.push('文昌');
+                shenshaList.push('文昌贵人');
+            }
+            
+            // 天德贵人（月支查天干）
+            if (SHENSHA.TianDe[monthZhi] && allGan && SHENSHA.TianDe[monthZhi].includes(allGan)) {
+                shenshaList.push('天德');
+            }
+            
+            // 月德贵人（月支查天干）
+            if (SHENSHA.YueDe[monthZhi] && allGan && SHENSHA.YueDe[monthZhi].includes(allGan)) {
+                shenshaList.push('月德');
+            }
+            
+            // 天德合（月支查天干）
+            if (SHENSHA.TianDeHe[monthZhi] && allGan && SHENSHA.TianDeHe[monthZhi].includes(allGan)) {
+                shenshaList.push('天德合');
+            }
+            
+            // 月德合（月支查天干）
+            if (SHENSHA.YueDeHe[monthZhi] && allGan && SHENSHA.YueDeHe[monthZhi].includes(allGan)) {
+                shenshaList.push('月德合');
             }
             
             // 红艳
@@ -352,6 +520,11 @@
             // 桃花（以日支查）
             if (SHENSHA.TaoHua[dayZhi] && SHENSHA.TaoHua[dayZhi].includes(allZhi)) {
                 shenshaList.push('桃花');
+            }
+            
+            // 咸池（以日支查，实际上就是桃花的别名，这里避免重复）
+            if (SHENSHA.XianChi[dayZhi] && SHENSHA.XianChi[dayZhi].includes(allZhi) && !shenshaList.includes('桃花')) {
+                shenshaList.push('咸池');
             }
             
             // 驿马（以日支查）
@@ -367,6 +540,11 @@
             // 将星（以日支查）
             if (SHENSHA.JiangXing[dayZhi] && SHENSHA.JiangXing[dayZhi].includes(allZhi)) {
                 shenshaList.push('将星');
+            }
+            
+            // 金舆（以日支查）
+            if (SHENSHA.JinYu[dayZhi] && SHENSHA.JinYu[dayZhi].includes(allZhi)) {
+                shenshaList.push('金舆');
             }
             
             // 孤辰（以年支查）
@@ -397,6 +575,89 @@
             // 灾煞（以日支查）
             if (SHENSHA.ZaiSha[dayZhi] && SHENSHA.ZaiSha[dayZhi].includes(allZhi)) {
                 shenshaList.push('灾煞');
+            }
+            
+            // 亡神（以日支查）
+            if (SHENSHA.WangShen[dayZhi] && SHENSHA.WangShen[dayZhi].includes(allZhi)) {
+                shenshaList.push('亡神');
+            }
+            
+            // 天罗地网
+            if (SHENSHA.TianLuo.includes(allZhi)) {
+                shenshaList.push('天罗');
+            }
+            if (SHENSHA.DiWang.includes(allZhi)) {
+                shenshaList.push('地网');
+            }
+            
+            // 元辰（以年支查）
+            if (SHENSHA.YuanChen[yearZhi] && SHENSHA.YuanChen[yearZhi].includes(allZhi)) {
+                shenshaList.push('元辰');
+            }
+            
+            // 白虎（以年支查）
+            if (SHENSHA.BaiHu[yearZhi] && SHENSHA.BaiHu[yearZhi].includes(allZhi)) {
+                shenshaList.push('白虎');
+            }
+            
+            // 天喜（以年支查）
+            if (SHENSHA.TianXi[yearZhi] && SHENSHA.TianXi[yearZhi].includes(allZhi)) {
+                shenshaList.push('天喜');
+            }
+            
+            // 红鸾（以年支查）
+            if (SHENSHA.HongLuan[yearZhi] && SHENSHA.HongLuan[yearZhi].includes(allZhi)) {
+                shenshaList.push('红鸾');
+            }
+            
+            // 丧门（以年支查）
+            if (SHENSHA.SangMen[yearZhi] && SHENSHA.SangMen[yearZhi].includes(allZhi)) {
+                shenshaList.push('丧门');
+            }
+            
+            // 吊客（以年支查）
+            if (SHENSHA.DiaoKe[yearZhi] && SHENSHA.DiaoKe[yearZhi].includes(allZhi)) {
+                shenshaList.push('吊客');
+            }
+            
+            // 披麻（以年支查）
+            if (SHENSHA.PiMa[yearZhi] && SHENSHA.PiMa[yearZhi].includes(allZhi)) {
+                shenshaList.push('披麻');
+            }
+            
+            // 国印贵人（日干查地支）
+            if (SHENSHA.GuoYin[dayGan] && SHENSHA.GuoYin[dayGan].includes(allZhi)) {
+                shenshaList.push('国印贵人');
+            }
+            
+            // 学堂（日干查地支）- 与文昌相同，避免重复
+            if (SHENSHA.XueTang[dayGan] && SHENSHA.XueTang[dayGan].includes(allZhi) && !shenshaList.includes('文昌')) {
+                shenshaList.push('学堂');
+            }
+            
+            // 太极贵人（日干查地支）
+            if (SHENSHA.TaiJi[dayGan] && SHENSHA.TaiJi[dayGan].includes(allZhi)) {
+                shenshaList.push('太极贵人');
+            }
+            
+            // 天厨贵人（年支查地支）
+            if (SHENSHA.TianChu[yearZhi] && SHENSHA.TianChu[yearZhi].includes(allZhi)) {
+                shenshaList.push('天厨贵人');
+            }
+            
+            // 天赦（月支查日支，需要配合天干）
+            if (SHENSHA.TianShe[monthZhi] && SHENSHA.TianShe[monthZhi].includes(allZhi)) {
+                // 天赦需要特定的天干地支组合
+                const validCombos = {
+                    '寅': 'E', '卯': 'E', '辰': 'E', // 春月戊寅
+                    '巳': 'A', '午': 'A', '未': 'A', // 夏月甲午
+                    '申': 'E', '酉': 'E', '戌': 'E', // 秋月戊申
+                    '亥': 'A', '子': 'A', '丑': 'A'  // 冬月甲子
+                };
+                const ganMap = {'甲': 'A', '乙': 'B', '丙': 'C', '丁': 'D', '戊': 'E', '己': 'F', '庚': 'G', '辛': 'H', '壬': 'I', '癸': 'J'};
+                if (allGan && ganMap[allGan] === validCombos[monthZhi]) {
+                    shenshaList.push('天赦');
+                }
             }
             
             return shenshaList;
@@ -476,14 +737,26 @@
             const lunarBirth = solarBirth.getLunar();
             const bazi = lunarBirth.getEightChar();
             
-            // 0. 渲染八字排盘结果
-            renderBaziResult(bazi, lunarBirth, solarBirth, userName, userGender);
+            try {
+                // 0. 渲染八字排盘结果
+                renderBaziResult(bazi, lunarBirth, solarBirth, userName, userGender);
+            } catch (e) {
+                console.error('渲染八字排盘结果出错:', e);
+            }
             
-            // 1. 渲染原局
-            renderNatalChart(bazi, lunarBirth, userGender);
+            try {
+                // 1. 渲染原局
+                renderNatalChart(bazi, lunarBirth, userGender, birthDate);
+            } catch (e) {
+                console.error('渲染原局出错:', e);
+            }
             
-            // 2. 渲染流日
-            renderDailyCalendar(bazi, targetYear, targetMonth);
+            try {
+                // 2. 渲染流日
+                renderDailyCalendar(bazi, targetYear, targetMonth);
+            } catch (e) {
+                console.error('渲染流日出错:', e);
+            }
         }
 
         // ============ 十神映射 ============
@@ -547,6 +820,107 @@
             return NAYIN_MAP[ganZhi] || '';
         }
 
+        // ============ 生成命盘综合分析 ============
+        function generateBaziSummary(bazi, wuxingCount, shenshaList, userGender, riYuanStrength, totalScore, yuelingScore, dizhiScore, tianganScore, yuelingStatus) {
+            let html = '';
+            
+            // 1. 五行分析
+            const wuxingEntries = Object.entries(wuxingCount);
+            const maxWuxing = wuxingEntries.reduce((max, curr) => curr[1] > max[1] ? curr : max);
+            const minWuxing = wuxingEntries.filter(e => e[1] === 0);
+            const weakWuxing = wuxingEntries.filter(e => e[1] === 1);
+            
+            html += '<p><strong>【五行分析】</strong>';
+            if (maxWuxing[1] >= 3) {
+                html += `命局<span class="font-semibold text-${maxWuxing[0] === '金' ? 'yellow' : maxWuxing[0] === '木' ? 'green' : maxWuxing[0] === '水' ? 'blue' : maxWuxing[0] === '火' ? 'red' : 'yellow'}-700">${maxWuxing[0]}</span>行较旺（${maxWuxing[1]}个）。`;
+            }
+            
+            if (minWuxing.length > 0) {
+                html += `五行缺<span class="font-semibold text-red-600">${minWuxing.map(e => e[0]).join('、')}</span>。`;
+            } else if (weakWuxing.length > 0) {
+                html += `五行${weakWuxing.map(e => e[0]).join('、')}较弱。`;
+            } else {
+                html += '五行较为齐全平衡。';
+            }
+            html += '</p>';
+            
+            // 2. 日元强弱分析（引用上面计算出的结果）
+            const dayGan = bazi.getDayGan();
+            const dayWuxing = WUXING_MAP[dayGan];
+            const monthZhi = bazi.getMonthZhi();
+            
+            // 这里使用前面已经计算好的 riYuanStrength 和 yuelingStatus
+            html += `<p><strong>【日元分析】</strong>日元<span class="font-bold text-lg">${dayGan}</span>${dayWuxing}，生于${monthZhi}月（${yuelingStatus}），日主<span class="font-semibold ${riYuanStrength === '身旺' ? 'text-green-600' : riYuanStrength === '身弱' ? 'text-orange-600' : 'text-blue-600'}">${riYuanStrength}</span>。综合得分${totalScore.toFixed(1)}分（月令${yuelingScore}分+地支${dizhiScore.toFixed(1)}分+天干${tianganScore}分）。</p>`;
+            
+            // 3. 神煞吉凶分析
+            const jiShenSha = ['天乙贵人', '天德贵人', '月德贵人', '文昌贵人', '太极贵人', '国印贵人', '禄神', '将星', '天厨贵人', '金舆', '红鸾', '天喜'];
+            const xiongShenSha = ['劫煞', '灾煞', '亡神', '羊刃', '元辰', '白虎', '丧门', '吊客', '披麻', '孤辰', '寡宿'];
+            
+            const jiList = shenshaList.filter(s => jiShenSha.includes(s));
+            const xiongList = shenshaList.filter(s => xiongShenSha.includes(s));
+            
+            html += '<p><strong>【神煞分析】</strong>';
+            if (jiList.length > 0) {
+                html += `命带吉神：<span class="text-green-600 font-medium">${jiList.join('、')}</span>。`;
+            }
+            if (xiongList.length > 0) {
+                html += `命带凶煞：<span class="text-red-600 font-medium">${xiongList.join('、')}</span>。`;
+            }
+            
+            if (jiList.length > xiongList.length) {
+                html += '吉星较多，贵人相助，多逢化吉。';
+            } else if (xiongList.length > jiList.length) {
+                html += '凶煞较多，人生多波折，需谨慎行事。';
+            } else {
+                html += '吉凶参半，需把握机遇。';
+            }
+            html += '</p>';
+            
+            // 4. 特殊神煞提示
+            let specialTips = [];
+            if (shenshaList.includes('天乙贵人')) {
+                specialTips.push('天乙贵人护佑，遇难呈祥');
+            }
+            if (shenshaList.includes('文昌贵人') || shenshaList.includes('学堂')) {
+                specialTips.push('文昌学堂加身，聪明好学，利文化事业');
+            }
+            if (shenshaList.includes('桃花') || shenshaList.includes('红艳')) {
+                specialTips.push('命带桃花，异性缘佳');
+            }
+            if (shenshaList.includes('驿马')) {
+                specialTips.push('驿马星动，适合外出发展');
+            }
+            if (shenshaList.includes('华盖')) {
+                specialTips.push('华盖临身，有艺术天赋');
+            }
+            if (shenshaList.includes('羊刃')) {
+                specialTips.push('羊刃之命，性格刚强');
+            }
+            if (shenshaList.includes('孤辰') || shenshaList.includes('寡宿')) {
+                specialTips.push('命带孤寡，性格独立');
+            }
+            
+            if (specialTips.length > 0) {
+                html += `<p><strong>【特别提示】</strong>${specialTips.join('；')}。</p>`;
+            }
+            
+            // 5. 性格特征
+            const genderText = userGender === 1 ? '男命' : '女命';
+            const xinggeMap = {
+                '木': '性格仁慈温和，有进取心，喜欢自然和自由',
+                '火': '性格热情主动，有礼貌，做事积极但容易急躁',
+                '土': '性格敦厚稳重，讲信用，为人忠诚可靠',
+                '金': '性格刚毅果断，有正义感，做事认真但较固执',
+                '水': '性格智慧灵活，善于应变，聪明但易多虑'
+            };
+            html += `<p><strong>【性格特征】</strong>${genderText}，${dayGan}${dayWuxing}日元，${xinggeMap[dayWuxing]}。</p>`;
+            
+            // 6. 建议
+            html += `<p class="mt-3 pt-3 border-t border-blue-200"><strong>【人生建议】</strong>顺应天时，把握机遇，扬长避短，趋吉避凶。${riYuanStrength === '身旺' ? '身旺者宜泄不宜助。' : riYuanStrength === '身弱' ? '身弱者宜扶不宜克。' : '日主中和，平衡为贵。'}命运掌握在自己手中，积善行德，自有福报。</p>`;
+            
+            return html;
+        }
+
         // ============ 渲染八字排盘结果 ============
         function renderBaziResult(bazi, lunar, solar, userName, userGender) {
             const container = document.getElementById('baziResult');
@@ -571,7 +945,9 @@
 
             // 计算起运信息
             const yun = bazi.getYun(userGender);
-            const startAge = yun.getStartYear();
+            const startYear = yun.getStartYear();  // 起运年数
+            const startMonth = yun.getStartMonth();  // 起运月数
+            const startDay = yun.getStartDay();  // 起运天数
             const startSolar = yun.getStartSolar();
             
             // 获取命宫、胎元
@@ -582,19 +958,158 @@
             const xun = lunar.getDayXun();
             const kongWang = lunar.getDayXunKong();
             
+            // ============ 精准判断身强身弱（三步加权法）============
+            const dayWuxing = WUXING_MAP[dayGan];
+            const monthWuxing = WUXING_MAP[monthZhi];
+            
+            let totalScore = 0; // 总分，满分100，45-55为中和
+            let analysisDetails = {};
+            
+            // 五行相生相克关系
+            const shengMap = {'木':'水','火':'木','土':'火','金':'土','水':'金'}; // 生我
+            const keMap = {'木':'金','火':'水','土':'木','金':'火','水':'土'}; // 克我
+            const woShengMap = {'木':'火','火':'土','土':'金','金':'水','水':'木'}; // 我生
+            const woKeMap = {'木':'土','火':'金','土':'水','金':'木','水':'火'}; // 我克
+            
+            // 第一步：月令得失（权重50%）
+            let yuelingScore = 0;
+            let yuelingStatus = '';
+            
+            if (monthWuxing === dayWuxing) {
+                // 旺：同我
+                yuelingScore = 50;
+                yuelingStatus = '得令（旺）';
+            } else if (monthWuxing === shengMap[dayWuxing]) {
+                // 相：生我
+                yuelingScore = 40;
+                yuelingStatus = '得令（相）';
+            } else if (monthWuxing === woShengMap[dayWuxing]) {
+                // 泄：我生
+                yuelingScore = -25;
+                yuelingStatus = '失令（泄）';
+            } else if (monthWuxing === woKeMap[dayWuxing]) {
+                // 耗：我克
+                yuelingScore = -20;
+                yuelingStatus = '失令（耗）';
+            } else if (monthWuxing === keMap[dayWuxing]) {
+                // 克：克我
+                yuelingScore = -30;
+                yuelingStatus = '失令（克）';
+            }
+            totalScore += yuelingScore;
+            analysisDetails.yuelingScore = yuelingScore;
+            analysisDetails.yuelingStatus = yuelingStatus;
+            
+            // 第二步：地支藏根（权重30%）
+            let dizhiScore = 0;
+            const zhiList = [
+                {zhi: yearZhi, weight: 0.5},  // 年支
+                {zhi: monthZhi, weight: 0.7}, // 月支
+                {zhi: dayZhi, weight: 1.0},   // 日支（最重要）
+                {zhi: timeZhi, weight: 0.8}   // 时支
+            ];
+            
+            // 阳干长生表（特殊强根）
+            const changshengRoot = {
+                '甲': '亥', '丙': '寅', '戊': '寅', '庚': '巳', '壬': '申'
+            };
+            
+            zhiList.forEach(item => {
+                const cangGans = getCangGan(item.zhi);
+                let hasRoot = false;
+                let rootStrength = 0;
+                
+                // 本气根（最强）
+                if (cangGans[0] === dayGan || WUXING_MAP[cangGans[0]] === dayWuxing) {
+                    rootStrength = 10 * item.weight;
+                    hasRoot = true;
+                }
+                // 阳干长生位（强根）
+                else if (changshengRoot[dayGan] === item.zhi) {
+                    rootStrength = 8 * item.weight;
+                    hasRoot = true;
+                }
+                // 中气余气根
+                else if (cangGans.some(cg => WUXING_MAP[cg] === dayWuxing)) {
+                    rootStrength = 4 * item.weight;
+                    hasRoot = true;
+                }
+                // 印星（生我的）也算帮扶
+                else if (cangGans.some(cg => WUXING_MAP[cg] === shengMap[dayWuxing])) {
+                    rootStrength = 3 * item.weight;
+                }
+                
+                dizhiScore += rootStrength;
+            });
+            
+            totalScore += dizhiScore;
+            analysisDetails.dizhiScore = dizhiScore;
+            
+            // 第三步：天干帮扶（权重20%）
+            let tianganScore = 0;
+            const ganList = [yearGan, monthGan, timeGan]; // 不算日干自己
+            
+            ganList.forEach(gan => {
+                const ganWuxing = WUXING_MAP[gan];
+                if (ganWuxing === dayWuxing) {
+                    // 比劫
+                    tianganScore += 5;
+                } else if (ganWuxing === shengMap[dayWuxing]) {
+                    // 印星
+                    tianganScore += 4;
+                } else if (ganWuxing === woShengMap[dayWuxing]) {
+                    // 食伤（泄）
+                    tianganScore -= 2;
+                } else if (ganWuxing === woKeMap[dayWuxing]) {
+                    // 财星（耗）
+                    tianganScore -= 2;
+                } else if (ganWuxing === keMap[dayWuxing]) {
+                    // 官杀（克）
+                    tianganScore -= 3;
+                }
+            });
+            
+            totalScore += tianganScore;
+            analysisDetails.tianganScore = tianganScore;
+            analysisDetails.totalScore = totalScore;
+            
+            // 最终判定
+            let riYuanStrength = '中和';
+            if (totalScore >= 55) {
+                riYuanStrength = '身旺';
+            } else if (totalScore <= 40) {
+                riYuanStrength = '身弱';
+            }
+            
+            console.log('身强身弱详细分析:', {
+                dayGan, dayWuxing, monthZhi, monthWuxing,
+                月令得分: yuelingScore, 月令状态: yuelingStatus,
+                地支得分: dizhiScore.toFixed(1),
+                天干得分: tianganScore,
+                总分: totalScore.toFixed(1),
+                判定: riYuanStrength
+            });
+            
             // 获取公历农历信息
             const solarDate = `${solar.getYear()}年${String(solar.getMonth()).padStart(2, '0')}月${String(solar.getDay()).padStart(2, '0')}日${String(solar.getHour()).padStart(2, '0')}时${String(solar.getMinute()).padStart(2, '0')}分`;
             const lunarDate = `${lunar.getYearInChinese()}年(生肖${lunar.getYearShengXiao()})${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}${lunar.getTimeZhi()}时`;
 
             // 计算神煞（获取日柱和年支的所有神煞）
             const allShenSha = [];
-            const dayZhiList = [yearZhi, monthZhi, dayZhi, timeZhi];
-            dayZhiList.forEach(zhi => {
-                const ss = calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, zhi);
+            const ganZhiPairs = [
+                {gan: yearGan, zhi: yearZhi},
+                {gan: monthGan, zhi: monthZhi},
+                {gan: dayGan, zhi: dayZhi},
+                {gan: timeGan, zhi: timeZhi}
+            ];
+            ganZhiPairs.forEach(pair => {
+                const ss = calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, pair.zhi, pair.gan);
                 allShenSha.push(...ss);
             });
             // 去重
             const uniqueShenSha = [...new Set(allShenSha)];
+            console.log('计算出的神煞:', uniqueShenSha);
+            console.log('日干:', dayGan, '日支:', dayZhi, '年支:', yearZhi, '月支:', monthZhi);
 
             const html = `
                 <div class="max-w-6xl mx-auto">
@@ -608,7 +1123,7 @@
                             <p><span class="font-bold">节气：</span>${lunar.getPrevJieQi().getName()} ${lunar.getPrevJieQi().getSolar().toYmd()} &nbsp;&nbsp; ${lunar.getNextJieQi().getName()} ${lunar.getNextJieQi().getSolar().toYmd()}</p>
                         </div>
                         <div class="space-y-2">
-                            <p><span class="font-bold">起运：</span>命主于出生后${startAge}年开始起运</p>
+                            <p><span class="font-bold">起运：</span>命主于出生后${startYear}年${startMonth}月${startDay}日开始起运</p>
                             <p><span class="font-bold">交运：</span>命主于公历${startSolar.getYear()}年${String(startSolar.getMonth()).padStart(2, '0')}月${String(startSolar.getDay()).padStart(2, '0')}日交运</p>
                             <p><span class="font-bold">排盘方式：</span>公历排盘</p>
                         </div>
@@ -617,6 +1132,25 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
                         <p><span class="font-bold">公历：</span>${solarDate}</p>
                         <p><span class="font-bold">农历：</span>${lunarDate}</p>
+                    </div>
+
+                    <!-- 日元强弱显示 -->
+                    <div class="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border-2 ${riYuanStrength === '身旺' ? 'border-green-400' : riYuanStrength === '身弱' ? 'border-orange-400' : 'border-blue-400'}">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <span class="text-sm text-gray-600">日元强弱：</span>
+                                <span class="text-2xl font-bold ml-3 ${riYuanStrength === '身旺' ? 'text-green-600' : riYuanStrength === '身弱' ? 'text-orange-600' : 'text-blue-600'}">${riYuanStrength}</span>
+                                <span class="text-sm text-gray-500 ml-2">(综合得分: ${totalScore.toFixed(1)}分)</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                ${riYuanStrength === '身旺' ? '💪 日主偏旺，宜泄不宜助' : riYuanStrength === '身弱' ? '🌱 日主偏弱，宜扶不宜克' : '⚖️ 日主中和，平衡为贵'}
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 flex gap-4">
+                            <span>📅 月令${yuelingStatus}: ${yuelingScore > 0 ? '+' : ''}${yuelingScore}分</span>
+                            <span>🌳 地支藏根: ${dizhiScore > 0 ? '+' : ''}${dizhiScore.toFixed(1)}分</span>
+                            <span>☁️ 天干帮扶: ${tianganScore > 0 ? '+' : ''}${tianganScore}分</span>
+                        </div>
                     </div>
 
                     <!-- 四柱表格 -->
@@ -698,11 +1232,26 @@
                                 <tr>
                                     <td class="border border-gray-300 p-2 bg-gray-100 font-bold">神煞</td>
                                     <td class="border border-gray-300 p-2 text-xs" colspan="4">
-                                        ${uniqueShenSha.map(s => `<span class="shensha-tag">${s}</span>`).join(' ')}
+                                        ${uniqueShenSha.length > 0 ? uniqueShenSha.map(s => {
+                                            const jiShenList = ['天乙贵人', '天德贵人', '月德贵人', '文昌贵人', '文昌', '太极贵人', '国印贵人', '禄神', '将星', '天厨贵人', '金舆', '红鸾', '天喜', '学堂', '天德合', '月德合'];
+                                            const isJi = jiShenList.includes(s);
+                                            return `<span class="shensha-tag" style="background-color: ${isJi ? '#dcfce7' : '#fee2e2'}; color: ${isJi ? '#166534' : '#991b1b'}; border-color: ${isJi ? '#86efac' : '#fca5a5'}">${s}</span>`;
+                                        }).join(' ') : '<span class="text-gray-400">暂无</span>'}
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- 命盘综合分析 -->
+                    <div class="mt-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                            <span class="mr-2">📊</span>
+                            命盘综合分析
+                        </h3>
+                        <div class="text-sm leading-relaxed text-gray-700 space-y-2">
+                            ${generateBaziSummary(bazi, wuxingCount, uniqueShenSha, userGender, riYuanStrength, totalScore, yuelingScore, dizhiScore, tianganScore, yuelingStatus)}
+                        </div>
                     </div>
                 </div>
             `;
@@ -712,7 +1261,7 @@
         }
 
         // ============ 渲染原局四柱 ============
-        function renderNatalChart(bazi, lunar, userGender) {
+        function renderNatalChart(bazi, lunar, userGender, birthDate) {
             const container = document.getElementById('natalChart');
             const pillars = [
                 { title: '年柱', gan: bazi.getYearGan(), zhi: bazi.getYearZhi(), icon: '🎋' },
@@ -745,39 +1294,145 @@
             });
             container.innerHTML = html;
 
-            // 渲染大运信息（使用性别参数）
-            const dayunContainer = document.getElementById('dayunInfo');
-            const yun = lunar.getEightChar().getYun(userGender);
-            
-            let dayunHtml = `
-                <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
-                    <div class="text-sm text-gray-600 mb-2">起运年龄</div>
-                    <div class="text-2xl font-bold text-blue-600">${yun.getStartYear()}岁</div>
-                </div>
-            `;
-            
-            const dayuns = yun.getDaYun();
-            if (dayuns.length > 0) {
-                const currentDayun = dayuns[0];
-                dayunHtml += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
-                        <div class="text-sm text-gray-600 mb-2">当前大运</div>
-                        <div class="text-2xl font-bold">
-                            <span class="${getWuxingClass(currentDayun.getGanZhi().substring(0,1))}">${currentDayun.getGanZhi().substring(0,1)}</span>
-                            <span class="${getWuxingClass(currentDayun.getGanZhi().substring(1,2))}">${currentDayun.getGanZhi().substring(1,2)}</span>
+            // 渲染大运详细表格（使用性别参数）
+            try {
+                const dayunDetailContainer = document.getElementById('dayunDetailTable');
+                if (!dayunDetailContainer) {
+                    console.error('找不到dayunDetailTable容器');
+                    return;
+                }
+                console.log('开始渲染大运详细表格');
+                
+                const yun = bazi.getYun(userGender);
+                const dayGanForDayun = bazi.getDayGan();
+                
+                // 计算当前年龄
+                const now = new Date();
+                const age = now.getFullYear() - birthDate.getFullYear();
+                const birthYear = birthDate.getFullYear();
+                
+                const dayuns = yun.getDaYun();
+                console.log('大运数量:', dayuns.length);
+                
+                if (dayuns && dayuns.length > 0) {
+                // 生成大运表格
+                let tableHtml = '<table class="w-full border-collapse text-center text-xs">';
+                
+                // 第一行：年龄
+                tableHtml += '<tr class="border-b-2 border-gray-400">';
+                tableHtml += '<td class="p-2 font-bold text-left">岁数</td>';
+                dayuns.slice(0, 9).forEach(dy => {
+                    const startAge = dy.getStartAge();
+                    const endAge = dy.getEndAge();
+                    tableHtml += `<td class="p-2 font-bold">${String(startAge).padStart(2, '0')}岁</td>`;
+                });
+                tableHtml += '</tr>';
+                
+                // 第二行：大运始于（公历年份）
+                tableHtml += '<tr class="bg-gray-50 border-b border-gray-300">';
+                tableHtml += '<td class="p-2 text-left">大运始于</td>';
+                dayuns.slice(0, 9).forEach(dy => {
+                    const startAge = dy.getStartAge();
+                    const calculatedYear = birthYear + startAge;
+                    tableHtml += `<td class="p-2">${calculatedYear}</td>`;
+                });
+                tableHtml += '</tr>';
+                
+                // 第三行：天干十神
+                tableHtml += '<tr class="border-b border-gray-300">';
+                tableHtml += '<td class="p-2 font-bold text-left">天干十神</td>';
+                dayuns.slice(0, 9).forEach(dy => {
+                    const ganZhi = dy.getGanZhi();
+                    const gan = ganZhi.substring(0, 1);
+                    const shiShen = getShiShen(dayGanForDayun, gan);
+                    tableHtml += `<td class="p-2 ${getWuxingClass(gan)}">${shiShen}</td>`;
+                });
+                tableHtml += '</tr>';
+                
+                // 第四行：大运干支
+                tableHtml += '<tr class="bg-blue-50 border-b-2 border-gray-400">';
+                tableHtml += '<td class="p-2 font-bold text-left">大运</td>';
+                dayuns.slice(0, 9).forEach(dy => {
+                    const ganZhi = dy.getGanZhi();
+                    const gan = ganZhi.substring(0, 1);
+                    const zhi = ganZhi.substring(1, 2);
+                    tableHtml += `<td class="p-3">
+                        <div class="text-xl font-bold">
+                            <span class="${getWuxingClass(gan)}">${gan}</span><span class="${getWuxingClass(zhi)}">${zhi}</span>
                         </div>
-                    </div>
-                `;
+                    </td>`;
+                });
+                tableHtml += '</tr>';
+                
+                // 第五行：地支藏干及十神
+                tableHtml += '<tr class="border-b border-gray-300">';
+                tableHtml += '<td class="p-2 font-bold text-left">地支十神</td>';
+                dayuns.slice(0, 9).forEach(dy => {
+                    const ganZhi = dy.getGanZhi();
+                    const zhi = ganZhi.substring(1, 2);
+                    const cangGans = getCangGan(zhi);
+                    let cangGanHtml = '';
+                    cangGans.forEach(cg => {
+                        const cgShiShen = getShiShen(dayGanForDayun, cg);
+                        cangGanHtml += `<div class="text-xs ${getWuxingClass(cg)}">${cg}<br>${cgShiShen}</div>`;
+                    });
+                    tableHtml += `<td class="p-2 leading-tight">${cangGanHtml}</td>`;
+                });
+                tableHtml += '</tr>';
+                
+                // 第六行：十二长生
+                tableHtml += '<tr class="border-b border-gray-300 bg-gray-50">';
+                tableHtml += '<td class="p-2 font-bold text-left">十二长生</td>';
+                dayuns.slice(0, 9).forEach(dy => {
+                    const ganZhi = dy.getGanZhi();
+                    const zhi = ganZhi.substring(1, 2);
+                    const changSheng = getChangSheng(dayGanForDayun, zhi);
+                    tableHtml += `<td class="p-2">${changSheng}</td>`;
+                });
+                tableHtml += '</tr>';
+                
+                // 第七行：大运止于
+                tableHtml += '<tr class="border-b-2 border-gray-400">';
+                tableHtml += '<td class="p-2 text-left">大运止于</td>';
+                dayuns.slice(0, 9).forEach(dy => {
+                    const endAge = dy.getEndAge();
+                    const calculatedYear = birthYear + endAge;
+                    tableHtml += `<td class="p-2">${calculatedYear}</td>`;
+                });
+                tableHtml += '</tr>';
+                
+                tableHtml += '</table>';
+                
+                // 添加说明
+                tableHtml += `<div class="mt-4 text-xs text-gray-600">
+                    <p>💡 <strong>提示：</strong>起运年龄 ${yun.getStartYear()}岁${yun.getStartMonth()}月${yun.getStartDay()}天，当前年龄约 ${age} 岁。大运每10年一换。</p>
+                </div>`;
+                
+                dayunDetailContainer.innerHTML = tableHtml;
+                console.log('大运表格渲染完成');
+            } else {
+                console.warn('没有大运数据');
+                dayunDetailContainer.innerHTML = '<p class="text-gray-500 p-4">暂无大运数据</p>';
             }
-            
-            dayunContainer.innerHTML = dayunHtml;
+            } catch (e) {
+                console.error('渲染大运表格出错:', e);
+                const dayunDetailContainer = document.getElementById('dayunDetailTable');
+                if (dayunDetailContainer) {
+                    dayunDetailContainer.innerHTML = '<p class="text-red-500 p-4">大运表格加载失败: ' + e.message + '</p>';
+                }
+            }
         }
 
         // ============ 渲染流日日历 ============
         function renderDailyCalendar(bazi, year, month) {
             const tbody = document.getElementById('dailyTable');
+            if (!tbody) {
+                console.error('找不到dailyTable容器');
+                return;
+            }
             document.getElementById('calendarTitle').innerText = `${year}年${month}月流日详批`;
             tbody.innerHTML = '';
+            console.log('开始渲染流日:', year, month);
 
             // 获取原局干支用于比对
             const natalGan = { 
@@ -815,7 +1470,8 @@
                     natalZhi.D, 
                     natalZhi.Y, 
                     natalZhi.M, 
-                    dayZhi
+                    dayZhi,
+                    dayGan
                 );
                 
                 // 获取建除十二神
@@ -863,7 +1519,15 @@
         }
 
         // 页面加载时运行一次
-        window.onload = calculate;
+        window.onload = function() {
+            console.log('页面加载完成，开始计算');
+            try {
+                calculate();
+            } catch (e) {
+                console.error('calculate函数执行出错:', e);
+                alert('计算出错：' + e.message);
+            }
+        };
     </script>
 </body>
 </html>
