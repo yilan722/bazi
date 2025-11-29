@@ -166,6 +166,8 @@
                             <tr class="bg-gradient-to-r from-gray-700 to-gray-800 text-white text-sm uppercase tracking-wider">
                                 <th class="p-4 border-b border-gray-600">公历日期</th>
                                 <th class="p-4 border-b border-gray-600">农历</th>
+                                <th class="p-4 border-b border-gray-600">流年干支</th>
+                                <th class="p-4 border-b border-gray-600">流月干支</th>
                                 <th class="p-4 border-b border-gray-600">流日干支</th>
                                 <th class="p-4 border-b border-gray-600">天干留意</th>
                                 <th class="p-4 border-b border-gray-600">地支留意</th>
@@ -1496,9 +1498,123 @@
         }
 
         // ============ 生成每日综合解读 V2 ============
-        function generateDailyInterpretation(jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi) {
-            console.log('生成日象解读 V2.0:', {jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi});
+        function generateDailyInterpretation(jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi, monthGan, monthZhi, natalGan, natalZhi, isMonthChanged, monthShenshaList, yearGan, yearZhi, isYearChanged, yearShenshaList) {
+            console.log('生成日象解读 V2.0:', {jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi, monthGan, monthZhi, monthShenshaList, yearGan, yearZhi, yearShenshaList});
             let interpretation = [];
+            
+            // 0. 流年分析（流年变化时显示）
+            if (isYearChanged && yearGan && yearZhi) {
+                interpretation.push('<div class="mb-2 pb-2 border-b border-blue-200"><strong class="text-blue-700">【流年交替：' + yearGan + yearZhi + '】</strong></div>');
+                
+                // 流年神煞提示
+                if (yearShenshaList && yearShenshaList.length > 0) {
+                    const jiShenInYear = ['天乙贵人', '文昌贵人', '禄神', '天德', '月德'].filter(s => yearShenshaList.includes(s));
+                    const xiongShenInYear = ['羊刃', '劫煞', '灾煞', '白虎'].filter(s => yearShenshaList.includes(s));
+                    
+                    if (jiShenInYear.length > 0) {
+                        interpretation.push('<span class="text-green-600">🌟 本年吉神：' + jiShenInYear.join('、') + '</span>');
+                    }
+                    if (xiongShenInYear.length > 0) {
+                        interpretation.push('<span class="text-orange-600">⚠️ 本年凶煞：' + xiongShenInYear.join('、') + '，需谨慎</span>');
+                    }
+                }
+                
+                // 流年与命局的关系
+                const yearGanInteraction = checkInteractions(yearGan, natalGan, 'Gan');
+                const yearZhiInteraction = checkInteractions(yearZhi, natalZhi, 'Zhi');
+                
+                if (yearGanInteraction || yearZhiInteraction) {
+                    let yearNote = '<span class="text-blue-600">🎊 本年运势：';
+                    if (yearGanInteraction && yearGanInteraction.includes('合')) {
+                        yearNote += '天干相合，本年吉祥；';
+                    } else if (yearGanInteraction && yearGanInteraction.includes('冲')) {
+                        yearNote += '天干相冲，本年多变；';
+                    }
+                    
+                    if (yearZhiInteraction && yearZhiInteraction.includes('合')) {
+                        yearNote += '地支相合，贵人助力；';
+                    } else if (yearZhiInteraction && yearZhiInteraction.includes('冲')) {
+                        yearNote += '地支相冲，动荡不安；';
+                    } else if (yearZhiInteraction && yearZhiInteraction.includes('刑')) {
+                        yearNote += '地支相刑，防官非；';
+                    } else if (yearZhiInteraction && yearZhiInteraction.includes('害')) {
+                        yearNote += '地支相害，防暗损；';
+                    }
+                    yearNote = yearNote.replace(/；$/, '') + '</span>';
+                    interpretation.push(yearNote);
+                }
+                
+                // 流年五行提示
+                const yearGanWuxing = WUXING_MAP[yearGan];
+                const yearZhiWuxing = WUXING_MAP[yearZhi];
+                const wuxingTips = {
+                    '木': '本年木气旺，宜进取创业，利东方',
+                    '火': '本年火气旺，宜展现才华，利南方',
+                    '土': '本年土气旺，宜稳健投资，利中央',
+                    '金': '本年金气旺，宜改革创新，利西方',
+                    '水': '本年水气旺，宜学习进修，利北方'
+                };
+                if (yearGanWuxing === yearZhiWuxing && wuxingTips[yearGanWuxing]) {
+                    interpretation.push(`<span class="text-indigo-600">✨ ${wuxingTips[yearGanWuxing]}</span>`);
+                }
+            }
+            
+            // 1. 流月分析（流月变化时显示）
+            if (isMonthChanged && monthGan && monthZhi) {
+                interpretation.push('<div class="mb-2 pb-2 border-b border-purple-200"><strong class="text-purple-700">【流月交节：' + monthGan + monthZhi + '】</strong></div>');
+                
+                // 流月神煞提示
+                if (monthShenshaList && monthShenshaList.length > 0) {
+                    const jiShenInMonth = ['天乙贵人', '文昌贵人', '禄神', '天德', '月德'].filter(s => monthShenshaList.includes(s));
+                    const xiongShenInMonth = ['羊刃', '劫煞', '灾煞', '白虎'].filter(s => monthShenshaList.includes(s));
+                    
+                    if (jiShenInMonth.length > 0) {
+                        interpretation.push('<span class="text-green-600">✨ 本月吉神：' + jiShenInMonth.join('、') + '</span>');
+                    }
+                    if (xiongShenInMonth.length > 0) {
+                        interpretation.push('<span class="text-orange-600">⚠️ 本月凶煞：' + xiongShenInMonth.join('、') + '，需谨慎</span>');
+                    }
+                }
+                
+                // 流月与命局的关系
+                const monthGanInteraction = checkInteractions(monthGan, natalGan, 'Gan');
+                const monthZhiInteraction = checkInteractions(monthZhi, natalZhi, 'Zhi');
+                
+                if (monthGanInteraction || monthZhiInteraction) {
+                    let monthNote = '<span class="text-purple-600">🌙 本月运势：';
+                    if (monthGanInteraction && monthGanInteraction.includes('合')) {
+                        monthNote += '天干相合，本月顺遂；';
+                    } else if (monthGanInteraction && monthGanInteraction.includes('冲')) {
+                        monthNote += '天干相冲，本月多变；';
+                    }
+                    
+                    if (monthZhiInteraction && monthZhiInteraction.includes('合')) {
+                        monthNote += '地支相合，易得助力；';
+                    } else if (monthZhiInteraction && monthZhiInteraction.includes('冲')) {
+                        monthNote += '地支相冲，防突发事；';
+                    } else if (monthZhiInteraction && monthZhiInteraction.includes('刑')) {
+                        monthNote += '地支相刑，防小人；';
+                    } else if (monthZhiInteraction && monthZhiInteraction.includes('害')) {
+                        monthNote += '地支相害，宜低调；';
+                    }
+                    monthNote = monthNote.replace(/；$/, '') + '</span>';
+                    interpretation.push(monthNote);
+                }
+                
+                // 流月五行提示
+                const monthGanWuxing = WUXING_MAP[monthGan];
+                const monthZhiWuxing = WUXING_MAP[monthZhi];
+                const wuxingTips = {
+                    '木': '本月木气旺，宜多亲近自然，利创业发展',
+                    '火': '本月火气旺，宜积极主动，利宣传推广',
+                    '土': '本月土气旺，宜稳健行事，利投资置业',
+                    '金': '本月金气旺，宜果断决策，利签约合作',
+                    '水': '本月水气旺，宜灵活应变，利学习进修'
+                };
+                if (monthGanWuxing === monthZhiWuxing && wuxingTips[monthGanWuxing]) {
+                    interpretation.push(`<span class="text-blue-600">💫 ${wuxingTips[monthGanWuxing]}</span>`);
+                }
+            }
             
             // 1. 建除十二神含义
             const jianChuMeaning = {
@@ -1596,9 +1712,30 @@
                 console.error('找不到dailyTable容器');
                 return;
             }
-            document.getElementById('calendarTitle').innerText = `${year}年${month}月流日详批`;
+            // 获取当月第一天和最后一天来确定流年流月干支范围
+            const firstDaySolar = Solar.fromYmd(year, month, 1);
+            const firstDayLunar = firstDaySolar.getLunar();
+            const firstYearGanZhi = firstDayLunar.getYearInGanZhi();
+            const firstMonthGanZhi = firstDayLunar.getMonthInGanZhi();
+            
+            const lastDaySolar = Solar.fromYmd(year, month, new Date(year, month, 0).getDate());
+            const lastDayLunar = lastDaySolar.getLunar();
+            const lastYearGanZhi = lastDayLunar.getYearInGanZhi();
+            const lastMonthGanZhi = lastDayLunar.getMonthInGanZhi();
+            
+            // 如果当月有流年交替，显示两个流年
+            const yearTitle = firstYearGanZhi === lastYearGanZhi 
+                ? `流年：${firstYearGanZhi}` 
+                : `流年：${firstYearGanZhi} → ${lastYearGanZhi}`;
+            
+            // 如果当月有流月交节，显示两个流月
+            const monthTitle = firstMonthGanZhi === lastMonthGanZhi 
+                ? `流月：${firstMonthGanZhi}` 
+                : `流月：${firstMonthGanZhi} → ${lastMonthGanZhi}`;
+            
+            document.getElementById('calendarTitle').innerHTML = `${year}年${month}月流日详批 <span class="text-base font-normal ml-2"><span class="text-blue-600">${yearTitle}</span> | <span class="text-purple-600">${monthTitle}</span></span>`;
             tbody.innerHTML = '';
-            console.log('开始渲染流日:', year, month);
+            console.log('开始渲染流日:', year, month, yearTitle, monthTitle);
 
             // 获取原局干支用于比对
             const natalGan = { 
@@ -1618,14 +1755,137 @@
             const daysInMonth = new Date(year, month, 0).getDate();
             console.log(`当月天数: ${daysInMonth}`);
             
+            // 用于追踪流年和流月变化
+            let previousYearGanZhi = '';
+            let previousMonthGanZhi = '';
+            
             for (let d = 1; d <= daysInMonth; d++) {
                 const currentSolar = Solar.fromYmd(year, month, d);
                 const currentLunar = currentSolar.getLunar();
+                
+                // 获取流年干支
+                const yearGan = currentLunar.getYearGan();
+                const yearZhi = currentLunar.getYearZhi();
+                const yearGanZhi = currentLunar.getYearInGanZhi();
+                
+                // 获取流月干支
+                const monthGan = currentLunar.getMonthGan();
+                const monthZhi = currentLunar.getMonthZhi();
+                const monthGanZhi = currentLunar.getMonthInGanZhi();
+                
+                // 计算流年天干的十神
+                const yearGanShishen = getShiShen(natalGan.D, yearGan);
+                
+                // 检测流年是否发生变化
+                const isYearChanged = (previousYearGanZhi === '' && d === 1) || (previousYearGanZhi !== '' && previousYearGanZhi !== yearGanZhi);
+                
+                // 更新流年干支追踪
+                if (isYearChanged) {
+                    if (previousYearGanZhi !== '') {
+                        console.log(`第${d}日流年交替: ${previousYearGanZhi} → ${yearGanZhi}`);
+                    } else {
+                        console.log(`第${d}日流年: ${yearGanZhi}`);
+                    }
+                    previousYearGanZhi = yearGanZhi;
+                }
+                
+                // 计算流年地支藏干的十神（流年变化时显示）
+                const yearCangGans = getCangGan(yearZhi);
+                let yearCangGanShishenHtml = '';
+                if (isYearChanged && yearCangGans.length > 0) {
+                    yearCangGanShishenHtml = '<div class="text-xs text-gray-500 mt-1">';
+                    yearCangGans.forEach(cg => {
+                        const cgShishen = getShiShen(natalGan.D, cg);
+                        yearCangGanShishenHtml += `<span class="${getWuxingClass(cg)}">${cg}</span>(${cgShishen}) `;
+                    });
+                    yearCangGanShishenHtml += '</div>';
+                }
+                
+                // 流年与命局的交互（流年变化时计算显示）
+                let yearInteractionNote = '';
+                let yearShenshaList = [];
+                if (isYearChanged) {
+                    const yearGanNote = checkInteractions(yearGan, natalGan, 'Gan');
+                    const yearZhiNote = checkInteractions(yearZhi, natalZhi, 'Zhi');
+                    if (yearGanNote || yearZhiNote) {
+                        yearInteractionNote = '<div class="mt-1 text-xs">';
+                        if (yearGanNote) yearInteractionNote += yearGanNote;
+                        if (yearZhiNote) yearInteractionNote += (yearGanNote ? '<br>' : '') + yearZhiNote;
+                        yearInteractionNote += '</div>';
+                    }
+                    
+                    // 计算流年神煞
+                    yearShenshaList = calculateShenSha(
+                        natalGan.D, 
+                        natalZhi.D, 
+                        natalZhi.Y, 
+                        natalZhi.M, 
+                        yearZhi,
+                        yearGan,
+                        null, null, null, null
+                    );
+                }
+                
+                // 计算流月天干的十神
+                const monthGanShishen = getShiShen(natalGan.D, monthGan);
+                
+                // 检测流月是否发生变化
+                const isMonthChanged = (previousMonthGanZhi === '' && d === 1) || (previousMonthGanZhi !== '' && previousMonthGanZhi !== monthGanZhi);
+                
+                // 更新流月干支追踪
+                if (isMonthChanged) {
+                    if (previousMonthGanZhi !== '') {
+                        console.log(`第${d}日流月交节: ${previousMonthGanZhi} → ${monthGanZhi}`);
+                    } else {
+                        console.log(`第${d}日流月: ${monthGanZhi}`);
+                    }
+                    previousMonthGanZhi = monthGanZhi;
+                }
+                
+                // 计算流月地支藏干的十神（流月变化时显示）
+                const monthCangGans = getCangGan(monthZhi);
+                let monthCangGanShishenHtml = '';
+                if (isMonthChanged && monthCangGans.length > 0) {
+                    monthCangGanShishenHtml = '<div class="text-xs text-gray-500 mt-1">';
+                    monthCangGans.forEach(cg => {
+                        const cgShishen = getShiShen(natalGan.D, cg);
+                        monthCangGanShishenHtml += `<span class="${getWuxingClass(cg)}">${cg}</span>(${cgShishen}) `;
+                    });
+                    monthCangGanShishenHtml += '</div>';
+                }
+                
+                // 流月与命局的交互（流月变化时计算显示）
+                let monthInteractionNote = '';
+                let monthShenshaList = [];
+                if (isMonthChanged) {
+                    const monthGanNote = checkInteractions(monthGan, natalGan, 'Gan');
+                    const monthZhiNote = checkInteractions(monthZhi, natalZhi, 'Zhi');
+                    if (monthGanNote || monthZhiNote) {
+                        monthInteractionNote = '<div class="mt-1 text-xs">';
+                        if (monthGanNote) monthInteractionNote += monthGanNote;
+                        if (monthZhiNote) monthInteractionNote += (monthGanNote ? '<br>' : '') + monthZhiNote;
+                        monthInteractionNote += '</div>';
+                    }
+                    
+                    // 计算流月神煞
+                    monthShenshaList = calculateShenSha(
+                        natalGan.D, 
+                        natalZhi.D, 
+                        natalZhi.Y, 
+                        natalZhi.M, 
+                        monthZhi,
+                        monthGan,
+                        null, null, null, null
+                    );
+                }
                 
                 // 获取流日干支
                 const dayGan = currentLunar.getDayGan();
                 const dayZhi = currentLunar.getDayZhi();
                 const dayGanZhi = currentLunar.getDayInGanZhi();
+                
+                // 计算流日天干的十神
+                const dayGanShishen = getShiShen(natalGan.D, dayGan);
                 
                 // 交互计算
                 const ganNote = checkInteractions(dayGan, natalGan, 'Gan');
@@ -1663,10 +1923,12 @@
                 
                 // 生成每日解读
                 const dailyInterpretation = generateDailyInterpretation(
-                    jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi
+                    jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi,
+                    monthGan, monthZhi, natalGan, natalZhi, isMonthChanged, monthShenshaList,
+                    yearGan, yearZhi, isYearChanged, yearShenshaList
                 );
                 
-                console.log(`渲染第${d}日，干支: ${dayGan}${dayZhi}，建除: ${jianChu}`);
+                console.log(`渲染第${d}日，流年: ${yearGan}${yearZhi}，流月: ${monthGan}${monthZhi}，流日: ${dayGan}${dayZhi}，建除: ${jianChu}`);
                 
                 const row = `
                     <tr class="calendar-row hover:bg-gray-50 transition-colors">
@@ -1677,9 +1939,32 @@
                         <td class="p-4 border-b border-gray-200">
                             <div class="text-sm text-gray-700">${lunarMonth}月${lunarDay}</div>
                         </td>
-                        <td class="p-4 border-b border-gray-200 text-xl font-bold">
-                            <span class="${getWuxingClass(dayGan)}">${dayGan}</span>
-                            <span class="${getWuxingClass(dayZhi)}">${dayZhi}</span>
+                        <td class="p-4 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+                            <div class="text-lg font-bold">
+                                <span class="${getWuxingClass(yearGan)}">${yearGan}</span>
+                                <span class="${getWuxingClass(yearZhi)}">${yearZhi}</span>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1 font-medium">${yearGanShishen}</div>
+                            ${yearCangGanShishenHtml}
+                            ${isYearChanged ? '<div class="text-xs text-blue-600 font-medium mt-1">🎊 流年交替</div>' : ''}
+                            ${yearInteractionNote}
+                        </td>
+                        <td class="p-4 border-b border-gray-200 bg-gradient-to-br from-purple-50 to-indigo-50">
+                            <div class="text-lg font-bold">
+                                <span class="${getWuxingClass(monthGan)}">${monthGan}</span>
+                                <span class="${getWuxingClass(monthZhi)}">${monthZhi}</span>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1 font-medium">${monthGanShishen}</div>
+                            ${monthCangGanShishenHtml}
+                            ${isMonthChanged ? '<div class="text-xs text-purple-600 font-medium mt-1">⭐ 流月交节</div>' : ''}
+                            ${monthInteractionNote}
+                        </td>
+                        <td class="p-4 border-b border-gray-200">
+                            <div class="text-xl font-bold">
+                                <span class="${getWuxingClass(dayGan)}">${dayGan}</span>
+                                <span class="${getWuxingClass(dayZhi)}">${dayZhi}</span>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1 font-medium">${dayGanShishen}</div>
                         </td>
                         <td class="p-4 border-b border-gray-200">
                             ${ganNote || '<span class="text-gray-300">-</span>'}
