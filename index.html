@@ -1688,12 +1688,20 @@
                 }
             }
             
-            // 4. 五行建议
+            // 4. 五行建议（根据五行相生相克原理，旺则克之或泄之）
             const ganWuxing = WUXING_MAP[dayGan];
             const zhiWuxing = WUXING_MAP[dayZhi];
             if (ganWuxing === zhiWuxing) {
-                const colorMap = {'木':'绿','火':'红','土':'黄/棕','金':'白/金','水':'蓝/黑'};
-                interpretation.push(`<span class="text-gray-600">💡 今日${ganWuxing}气较旺，宜穿${colorMap[ganWuxing]}色衣物</span>`);
+                // 五行旺时，应该穿克制或泄气的颜色
+                // 格式：{克制颜色/泄气颜色}
+                const colorMap = {
+                    '木':'白/金色（金克木）或红色（木生火泄木）',
+                    '火':'黑/蓝色（水克火）或黄/棕色（火生土泄火）',
+                    '土':'绿色（木克土）或白/金色（土生金泄土）',
+                    '金':'红色（火克金）或黑/蓝色（金生水泄金）',
+                    '水':'黄/棕色（土克水）或绿色（水生木泄水）'
+                };
+                interpretation.push(`<span class="text-gray-600">💡 今日${ganWuxing}气较旺，宜穿${colorMap[ganWuxing]}</span>`);
             }
             
             // 5. 综合评价
