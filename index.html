@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>四柱八字排盘系统 - 专业版</title>
+    <title>四柱八字排盘系统 - 专业版 v2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.js"></script>
+    <!-- Version: 2.0 - Fixed daily interpretation -->
     <style>
         body { 
             font-family: "Microsoft YaHei", "PingFang SC", sans-serif; 
@@ -155,7 +156,7 @@
                         <span id="calendarTitle">流日详细运程</span>
                     </h2>
                     <div class="text-sm text-gray-500">
-                        <span class="mr-4">💡 提示：留意栏显示流日与原局的刑冲合害</span>
+                        <span class="mr-4">💡 提示：日象解读综合分析每日吉凶宜忌</span>
                     </div>
                 </div>
                 
@@ -169,6 +170,7 @@
                                 <th class="p-4 border-b border-gray-600">天干留意</th>
                                 <th class="p-4 border-b border-gray-600">地支留意</th>
                                 <th class="p-4 border-b border-gray-600">神煞详批</th>
+                                <th class="p-4 border-b border-gray-600 w-64">日象解读</th>
                             </tr>
                         </thead>
                         <tbody id="dailyTable" class="text-sm divide-y divide-gray-200">
@@ -479,17 +481,55 @@
         }
 
         // ============ 计算神煞 ============
-        function calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, allZhi, allGan) {
+        function calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, allZhi, allGan, yearGan, monthGan, timeGan, allZhiList) {
             let shenshaList = [];
             
-            // 天乙贵人（日干查流日地支）
-            if (SHENSHA.TianYi[dayGan] && SHENSHA.TianYi[dayGan].includes(allZhi)) {
-                shenshaList.push('天乙贵人');
+            // 天乙贵人（年干、月干、日干、时干分别查所有地支）
+            if (yearGan && allZhiList) {
+                // 用四柱的每个天干去查四柱的所有地支
+                const allGanList = [yearGan, monthGan, dayGan, timeGan].filter(g => g);
+                allGanList.forEach(gan => {
+                    if (SHENSHA.TianYi[gan]) {
+                        allZhiList.forEach(zhi => {
+                            if (SHENSHA.TianYi[gan].includes(zhi) && !shenshaList.includes('天乙贵人')) {
+                                shenshaList.push('天乙贵人');
+                            }
+                        });
+                    }
+                });
+            } else {
+                // 兼容旧的调用方式（只用日干查当前地支，用于流日计算）
+                if (SHENSHA.TianYi[dayGan] && SHENSHA.TianYi[dayGan].includes(allZhi)) {
+                    shenshaList.push('天乙贵人');
+                }
             }
             
-            // 文昌贵人
-            if (SHENSHA.WenChang[dayGan] && SHENSHA.WenChang[dayGan].includes(allZhi)) {
-                shenshaList.push('文昌贵人');
+            // 文昌贵人（年干、月干、日干、时干分别查所有地支）
+            // 这样可以找出所有可能的文昌贵人
+            if (yearGan && allZhiList) {
+                // 用四柱的每个天干去查四柱的所有地支
+                const allGanList = [yearGan, monthGan, dayGan, timeGan].filter(g => g);
+                const wenChangFound = [];
+                allGanList.forEach(gan => {
+                    if (SHENSHA.WenChang[gan]) {
+                        allZhiList.forEach(zhi => {
+                            if (SHENSHA.WenChang[gan].includes(zhi)) {
+                                wenChangFound.push(`${gan}见${zhi}`);
+                                if (!shenshaList.includes('文昌贵人')) {
+                                    shenshaList.push('文昌贵人');
+                                }
+                            }
+                        });
+                    }
+                });
+                if (wenChangFound.length > 0) {
+                    console.log('找到文昌贵人:', wenChangFound);
+                }
+            } else {
+                // 兼容旧的调用方式（只用日干查当前地支，用于流日计算）
+                if (SHENSHA.WenChang[dayGan] && SHENSHA.WenChang[dayGan].includes(allZhi)) {
+                    shenshaList.push('文昌贵人');
+                }
             }
             
             // 天德贵人（月支查天干）
@@ -756,6 +796,7 @@
                 renderDailyCalendar(bazi, targetYear, targetMonth);
             } catch (e) {
                 console.error('渲染流日出错:', e);
+                alert('渲染流日出错：' + e.message + '\n请查看控制台获取详细信息');
             }
         }
 
@@ -1047,9 +1088,9 @@
             
             // 第三步：天干帮扶（权重20%）
             let tianganScore = 0;
-            const ganList = [yearGan, monthGan, timeGan]; // 不算日干自己
+            const helpGanList = [yearGan, monthGan, timeGan]; // 不算日干自己
             
-            ganList.forEach(gan => {
+            helpGanList.forEach(gan => {
                 const ganWuxing = WUXING_MAP[gan];
                 if (ganWuxing === dayWuxing) {
                     // 比劫
@@ -1102,14 +1143,45 @@
                 {gan: dayGan, zhi: dayZhi},
                 {gan: timeGan, zhi: timeZhi}
             ];
-            ganZhiPairs.forEach(pair => {
-                const ss = calculateShenSha(dayGan, dayZhi, yearZhi, monthZhi, pair.zhi, pair.gan);
+            const allZhiList = [yearZhi, monthZhi, dayZhi, timeZhi];
+            const allGanList = [yearGan, monthGan, dayGan, timeGan];
+            
+            // 第一次循环时传入完整的干支列表用于计算文昌等需要交叉查询的神煞
+            ganZhiPairs.forEach((pair, index) => {
+                const ss = calculateShenSha(
+                    dayGan, dayZhi, yearZhi, monthZhi, pair.zhi, pair.gan, 
+                    index === 0 ? yearGan : null,  // 只在第一次循环时传入，避免重复计算
+                    index === 0 ? monthGan : null, 
+                    index === 0 ? timeGan : null, 
+                    index === 0 ? allZhiList : null
+                );
                 allShenSha.push(...ss);
             });
             // 去重
             const uniqueShenSha = [...new Set(allShenSha)];
             console.log('计算出的神煞:', uniqueShenSha);
+            console.log('四柱天干:', [yearGan, monthGan, dayGan, timeGan]);
+            console.log('四柱地支:', [yearZhi, monthZhi, dayZhi, timeZhi]);
             console.log('日干:', dayGan, '日支:', dayZhi, '年支:', yearZhi, '月支:', monthZhi);
+            
+            // 手动验证文昌贵人
+            console.log('=== 文昌贵人验证 ===');
+            const verifyGanList = [
+                {name: '年干', gan: yearGan},
+                {name: '月干', gan: monthGan},
+                {name: '日干', gan: dayGan},
+                {name: '时干', gan: timeGan}
+            ];
+            const verifyZhiList = [yearZhi, monthZhi, dayZhi, timeZhi];
+            verifyGanList.forEach(g => {
+                if (SHENSHA.WenChang[g.gan]) {
+                    console.log(`${g.name}${g.gan}的文昌位是: ${SHENSHA.WenChang[g.gan]}`);
+                    const found = verifyZhiList.filter(z => SHENSHA.WenChang[g.gan].includes(z));
+                    if (found.length > 0) {
+                        console.log(`  ✓ 在四柱中找到: ${found.join(', ')}`);
+                    }
+                }
+            });
 
             const html = `
                 <div class="max-w-6xl mx-auto">
@@ -1423,8 +1495,102 @@
             }
         }
 
+        // ============ 生成每日综合解读 V2 ============
+        function generateDailyInterpretation(jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi) {
+            console.log('生成日象解读 V2.0:', {jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi});
+            let interpretation = [];
+            
+            // 1. 建除十二神含义
+            const jianChuMeaning = {
+                '建': '主开创、立业，宜订婚、开业、上任，忌搬家',
+                '除': '主除旧布新，宜祭祀、医疗、破屋，忌出行',
+                '满': '主圆满、丰收，宜嫁娶、祈福、交易，忌就医',
+                '平': '主平稳、平顺，万事皆可，平平无奇',
+                '定': '主安定、确定，宜订婚、签约、安床，忌出行',
+                '执': '主执行、坚持，宜捕捉、诉讼，忌嫁娶',
+                '破': '主破败、冲突，诸事不宜，只宜破旧',
+                '危': '主危险、危机，宜求医、安床，忌出行',
+                '成': '主成就、成功，宜开业、嫁娶、建造，诸事大吉',
+                '收': '主收获、收敛，宜求财、收账，忌开业',
+                '开': '主开通、开始，宜开业、求财、出行，诸事吉利',
+                '闭': '主闭塞、休养，宜埋葬、修墓，忌开业、出行'
+            };
+            
+            if (jianChuMeaning[jianChu]) {
+                interpretation.push(`<strong>${jianChu}日</strong>：${jianChuMeaning[jianChu]}`);
+            }
+            
+            // 2. 神煞吉凶分析
+            const jiShen = ['天乙贵人', '文昌贵人', '天德', '月德', '天德合', '月德合', '禄神', '将星', '金舆', '红鸾', '天喜', '太极贵人', '国印贵人', '天厨贵人'];
+            const xiongShen = ['劫煞', '灾煞', '亡神', '羊刃', '元辰', '白虎', '丧门', '吊客', '披麻', '孤辰', '寡宿'];
+            const zhongShen = ['桃花', '红艳', '驿马', '华盖', '咸池'];
+            
+            const hasJiShen = shenshaList.filter(s => jiShen.includes(s));
+            const hasXiongShen = shenshaList.filter(s => xiongShen.includes(s));
+            const hasZhongShen = shenshaList.filter(s => zhongShen.includes(s));
+            
+            if (hasJiShen.length > 0) {
+                let jixiangDesc = '';
+                if (hasJiShen.includes('天乙贵人')) jixiangDesc += '贵人相助，';
+                if (hasJiShen.includes('文昌贵人')) jixiangDesc += '利学业考试，';
+                if (hasJiShen.includes('禄神')) jixiangDesc += '利求财进禄，';
+                if (hasJiShen.includes('天德') || hasJiShen.includes('月德')) jixiangDesc += '逢凶化吉，';
+                if (hasJiShen.includes('红鸾') || hasJiShen.includes('天喜')) jixiangDesc += '喜事临门，';
+                interpretation.push(`<span class="text-green-600">✓ ${jixiangDesc.replace(/，$/, '')}</span>`);
+            }
+            
+            if (hasXiongShen.length > 0) {
+                let xiongzhaoDesc = '';
+                if (hasXiongShen.includes('羊刃')) xiongzhaoDesc += '防血光之灾，';
+                if (hasXiongShen.includes('劫煞') || hasXiongShen.includes('灾煞')) xiongzhaoDesc += '防意外损失，';
+                if (hasXiongShen.includes('白虎')) xiongzhaoDesc += '防口舌是非，';
+                if (hasXiongShen.includes('丧门') || hasXiongShen.includes('吊客')) xiongzhaoDesc += '防孝服之事，';
+                interpretation.push(`<span class="text-orange-600">⚠ ${xiongzhaoDesc.replace(/，$/, '')}</span>`);
+            }
+            
+            if (hasZhongShen.length > 0) {
+                if (hasZhongShen.includes('驿马')) interpretation.push('<span class="text-blue-600">→ 宜出行走动、外出办事</span>');
+                if (hasZhongShen.includes('桃花') || hasZhongShen.includes('红艳')) interpretation.push('<span class="text-pink-600">💕 人缘佳、异性缘旺</span>');
+                if (hasZhongShen.includes('华盖')) interpretation.push('<span class="text-purple-600">🎨 适合艺术创作、修行</span>');
+            }
+            
+            // 3. 刑冲合害分析
+            if (ganNote || zhiNote) {
+                const hasChong = (ganNote && ganNote.includes('冲')) || (zhiNote && zhiNote.includes('冲'));
+                const hasHe = (ganNote && ganNote.includes('合')) || (zhiNote && zhiNote.includes('合'));
+                const hasXing = zhiNote && zhiNote.includes('刑');
+                const hasHai = zhiNote && zhiNote.includes('害');
+                
+                if (hasChong) {
+                    interpretation.push('<span class="text-red-600">⚡ 今日与命局相冲，诸事谨慎，防突发变动</span>');
+                } else if (hasHe) {
+                    interpretation.push('<span class="text-green-600">🤝 今日与命局相合，事半功倍，易得助力</span>');
+                } else if (hasXing) {
+                    interpretation.push('<span class="text-orange-600">⚠ 今日与命局相刑，防小人、防口舌</span>');
+                } else if (hasHai) {
+                    interpretation.push('<span class="text-yellow-600">⚠ 今日与命局相害，防暗损、防小人</span>');
+                }
+            }
+            
+            // 4. 五行建议
+            const ganWuxing = WUXING_MAP[dayGan];
+            const zhiWuxing = WUXING_MAP[dayZhi];
+            if (ganWuxing === zhiWuxing) {
+                const colorMap = {'木':'绿','火':'红','土':'黄/棕','金':'白/金','水':'蓝/黑'};
+                interpretation.push(`<span class="text-gray-600">💡 今日${ganWuxing}气较旺，宜穿${colorMap[ganWuxing]}色衣物</span>`);
+            }
+            
+            // 5. 综合评价
+            if (interpretation.length === 0) {
+                return '<span class="text-gray-500">今日平和，无特殊事项</span>';
+            }
+            
+            return interpretation.join('<br>');
+        }
+
         // ============ 渲染流日日历 ============
         function renderDailyCalendar(bazi, year, month) {
+            console.log('=== 开始渲染流日日历 ===', year, month);
             const tbody = document.getElementById('dailyTable');
             if (!tbody) {
                 console.error('找不到dailyTable容器');
@@ -1450,6 +1616,7 @@
 
             // 计算当月天数
             const daysInMonth = new Date(year, month, 0).getDate();
+            console.log(`当月天数: ${daysInMonth}`);
             
             for (let d = 1; d <= daysInMonth; d++) {
                 const currentSolar = Solar.fromYmd(year, month, d);
@@ -1464,14 +1631,18 @@
                 const ganNote = checkInteractions(dayGan, natalGan, 'Gan');
                 const zhiNote = checkInteractions(dayZhi, natalZhi, 'Zhi');
                 
-                // 计算神煞
+                // 计算神煞（流日计算只用日干查流日地支）
                 const shenshaList = calculateShenSha(
                     natalGan.D, 
                     natalZhi.D, 
                     natalZhi.Y, 
                     natalZhi.M, 
                     dayZhi,
-                    dayGan
+                    dayGan,
+                    null, // yearGan - 流日不需要
+                    null, // monthGan - 流日不需要
+                    null, // timeGan - 流日不需要
+                    null  // allZhiList - 流日不需要
                 );
                 
                 // 获取建除十二神
@@ -1489,6 +1660,13 @@
                 
                 // 星期
                 const week = currentSolar.getWeekInChinese();
+                
+                // 生成每日解读
+                const dailyInterpretation = generateDailyInterpretation(
+                    jianChu, shenshaList, ganNote, zhiNote, dayGan, dayZhi
+                );
+                
+                console.log(`渲染第${d}日，干支: ${dayGan}${dayZhi}，建除: ${jianChu}`);
                 
                 const row = `
                     <tr class="calendar-row hover:bg-gray-50 transition-colors">
@@ -1511,6 +1689,9 @@
                         </td>
                         <td class="p-4 border-b border-gray-200">
                             ${shenShaHtml}
+                        </td>
+                        <td class="p-4 border-b border-gray-200 text-xs leading-relaxed">
+                            ${dailyInterpretation}
                         </td>
                     </tr>
                 `;
